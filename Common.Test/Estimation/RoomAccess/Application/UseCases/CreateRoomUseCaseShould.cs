@@ -1,25 +1,25 @@
-using System;
-using System.Threading.Tasks;
-using Xunit;
-using Shouldly;
-using NSubstitute;
-using LanguageExt;
-using Common.Estimation.RoomAccess.Domain.Models;
-using Common.Estimation.RoomAccess.Domain.Ports;
 using Common.Estimation.RoomAccess.Application.Contracts;
 using Common.Estimation.RoomAccess.Application.UseCases;
+using Common.Estimation.RoomAccess.Domain.Models;
+using Common.Estimation.RoomAccess.Domain.Ports;
+using LanguageExt;
+using NSubstitute;
+using Shouldly;
+using Xunit;
 using static Common.Estimation.RoomAccess.Domain.Errors.RoomAccessErrors;
 
 namespace Common.Test.Estimation.RoomAccess.Application.UseCases;
 
 public class CreateRoomUseCaseShould
 {
+    private readonly IGuidGenerator _guidGenerator = Substitute.For<IGuidGenerator>();
     private readonly IEstimationRoomRepository _repository = Substitute.For<IEstimationRoomRepository>();
     private readonly CreateRoomUseCase _useCase;
 
     public CreateRoomUseCaseShould()
     {
-        _useCase = new CreateRoomUseCase(_repository);
+        _guidGenerator.NewGuid().Returns(Guid.NewGuid());
+        _useCase = new CreateRoomUseCase(_repository, _guidGenerator);
     }
 
     [Fact]
