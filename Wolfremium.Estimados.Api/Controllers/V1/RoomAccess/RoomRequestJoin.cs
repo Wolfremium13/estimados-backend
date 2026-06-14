@@ -47,9 +47,13 @@ public class RoomRequestJoin(
         {
             var groupName = $"room_{info.RoomId}";
 
-            logger.LogInformation(
-                "Web API: Sending notification OnJoinRequestReceived to room {RoomId} for participant {ParticipantName} ({ParticipantRole}).",
-                info.RoomId, info.ParticipantName, info.ParticipantRole);
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                logger.LogInformation(
+                    "Web API: Sending notification OnJoinRequestReceived to room {RoomId} for participant {ParticipantName} ({ParticipantRole}).",
+                    info.RoomId, info.ParticipantName, info.ParticipantRole);
+            }
+
 
             await hubContext.Clients.Group(groupName).SendAsync("OnJoinRequestReceived", info.RequestId,
                 info.ParticipantName, info.ParticipantRole);

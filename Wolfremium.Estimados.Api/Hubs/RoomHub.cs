@@ -19,7 +19,10 @@ public class RoomHub(
         await Groups.AddToGroupAsync(Context.ConnectionId, roomIdStr);
         ModeratorConnections[Context.ConnectionId] = roomId;
 
-        logger.LogInformation("SignalR Hub: Connection {ConnectionId} joined room {RoomId} as Moderator.", Context.ConnectionId, roomId);
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            logger.LogInformation("SignalR Hub: Connection {ConnectionId} joined room {RoomId} as Moderator.", Context.ConnectionId, roomId);
+        }
     }
 
     public async Task JoinRoomAsParticipant(Guid roomId)
@@ -28,14 +31,20 @@ public class RoomHub(
         await Groups.AddToGroupAsync(Context.ConnectionId, roomIdStr);
         ParticipantConnections[Context.ConnectionId] = roomId;
 
-        logger.LogInformation("SignalR Hub: Connection {ConnectionId} joined room {RoomId} as Participant.", Context.ConnectionId, roomId);
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            logger.LogInformation("SignalR Hub: Connection {ConnectionId} joined room {RoomId} as Participant.", Context.ConnectionId, roomId);
+        }
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         if (ModeratorConnections.TryRemove(Context.ConnectionId, out var roomId))
         {
-            logger.LogInformation("SignalR Hub: Moderator connection {ConnectionId} disconnected from room {RoomId}. Closing room...", Context.ConnectionId, roomId);
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                logger.LogInformation("SignalR Hub: Moderator connection {ConnectionId} disconnected from room {RoomId}. Closing room...", Context.ConnectionId, roomId);
+            }
 
             _ = await disconnectModeratorUseCase.Execute(new DisconnectModeratorCommand(roomId));
             await Clients.Group($"room_{roomId}").SendAsync("OnRoomClosed");
@@ -43,7 +52,10 @@ public class RoomHub(
 
         if (ParticipantConnections.TryRemove(Context.ConnectionId, out var pRoomId))
         {
-            logger.LogInformation("SignalR Hub: Participant connection {ConnectionId} disconnected from room {RoomId}.", Context.ConnectionId, pRoomId);
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                logger.LogInformation("SignalR Hub: Participant connection {ConnectionId} disconnected from room {RoomId}.", Context.ConnectionId, pRoomId);
+            }
         }
 
         await base.OnDisconnectedAsync(exception);

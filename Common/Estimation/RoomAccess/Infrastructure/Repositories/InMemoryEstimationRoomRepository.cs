@@ -19,16 +19,25 @@ public class InMemoryEstimationRoomRepository(
 
     public Task<Either<Error, EstimationRoom>> FindById(RoomId roomId)
     {
-        logger.LogInformation("In-memory repository: Finding room {RoomId}...", roomId.Value);
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            logger.LogInformation("In-memory repository: Finding room {RoomId}...", roomId.Value);
+        }
         
         if (Rooms.TryGetValue(roomId.Value, out var room))
         {
-            logger.LogInformation("In-memory repository: Found room {RoomId}. Active: {IsActive}, Participants: {ParticipantCount}.", 
-                room.Id.Value, room.IsActive, room.ActiveParticipants.Count);
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                logger.LogInformation("In-memory repository: Found room {RoomId}. Active: {IsActive}, Participants: {ParticipantCount}.", 
+                    room.Id.Value, room.IsActive, room.ActiveParticipants.Count);
+            }
             return Task.FromResult<Either<Error, EstimationRoom>>(room);
         }
 
-        logger.LogInformation("In-memory repository: Room {RoomId} was not found.", roomId.Value);
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            logger.LogInformation("In-memory repository: Room {RoomId} was not found.", roomId.Value);
+        }
         return Task.FromResult<Either<Error, EstimationRoom>>(
             Error.New(new RoomNotFoundException($"Room with ID {roomId.Value} was not found."))
         );

@@ -44,9 +44,12 @@ public class RoomApproveJoinRequest(
         {
             var groupName = $"room_{roomId}";
 
-            logger.LogInformation(
-                "Web API: Sending notification OnJoinRequestApproved to room {RoomId} for request {RequestId}.",
-                roomId, requestId);
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                logger.LogInformation(
+                    "Web API: Sending notification OnJoinRequestApproved to room {RoomId} for request {RequestId}.",
+                    roomId, requestId);
+            }
 
             await hubContext.Clients.Group(groupName).SendAsync("OnJoinRequestApproved", requestId);
             return Unit.Default;
