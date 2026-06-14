@@ -9,7 +9,7 @@ namespace Common.Estimation.RoomAccess.Infrastructure.Settings;
 
 public static class RoomAccessServiceCollectionExtensions
 {
-    public static IServiceCollection AddRoomAccessServices(this IServiceCollection services)
+    public static void AddRoomAccessServices(this IServiceCollection services)
     {
         services.AddSingleton<IEstimationRoomRepository, InMemoryEstimationRoomRepository>();
         services.AddSingleton<IGuidGenerator, SystemGuidGenerator>();
@@ -20,7 +20,5 @@ public static class RoomAccessServiceCollectionExtensions
         services.AddTransient<IApproveJoinRequestUseCase, ApproveJoinRequestUseCase>();
         services.AddTransient<IRejectJoinRequestUseCase, RejectJoinRequestUseCase>();
         services.AddTransient<IDisconnectModeratorUseCase, DisconnectModeratorUseCase>();
-
-        return services;
     }
 }
