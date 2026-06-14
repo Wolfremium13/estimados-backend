@@ -15,8 +15,7 @@ namespace Wolfremium.Estimados.Controllers.V1.RoomAccess;
 public class RoomRequestJoin(
     IRequestToJoinUseCase requestToJoinUseCase,
     IHubContext<RoomHub> hubContext,
-    ILogger<RoomRequestJoin>? logger = null,
-    IHostEnvironment? env = null
+    ILogger<RoomRequestJoin> logger
 ) : ControllerBase
 {
     [HttpPost("{roomId:guid}/join-requests")]
@@ -48,14 +47,9 @@ public class RoomRequestJoin(
         {
             var groupName = $"room_{info.RoomId}";
 
-            var isDev = env?.IsDevelopment() ??
-                        (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development");
-            if (isDev)
-            {
-                logger?.LogInformation(
-                    "Web API: Sending notification OnJoinRequestReceived to room {RoomId} for participant {ParticipantName} ({ParticipantRole}).",
-                    info.RoomId, info.ParticipantName, info.ParticipantRole);
-            }
+            logger.LogInformation(
+                "Web API: Sending notification OnJoinRequestReceived to room {RoomId} for participant {ParticipantName} ({ParticipantRole}).",
+                info.RoomId, info.ParticipantName, info.ParticipantRole);
 
             await hubContext.Clients.Group(groupName).SendAsync("OnJoinRequestReceived", info.RequestId,
                 info.ParticipantName, info.ParticipantRole);

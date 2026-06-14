@@ -11,11 +11,14 @@ using Wolfremium.Estimados.Hubs;
 using Xunit;
 using static Common.Estimation.RoomAccess.Domain.Errors.RoomAccessErrors;
 
+using Microsoft.Extensions.Logging;
+
 namespace Wolfremium.Estimados.Api.Test.RoomAccess.Unit.Controllers;
 
 public class RoomRequestJoinShould
 {
     private readonly IClientProxy _clientProxy = Substitute.For<IClientProxy>();
+    private readonly ILogger<RoomRequestJoin> _logger = Substitute.For<ILogger<RoomRequestJoin>>();
     private readonly RoomRequestJoin _controller;
     private readonly IHubClients _hubClients = Substitute.For<IHubClients>();
     private readonly IHubContext<RoomHub> _hubContext = Substitute.For<IHubContext<RoomHub>>();
@@ -26,7 +29,7 @@ public class RoomRequestJoinShould
         _hubContext.Clients.Returns(_hubClients);
         _hubClients.Group(Arg.Any<string>()).Returns(_clientProxy);
 
-        _controller = new RoomRequestJoin(_useCase, _hubContext);
+        _controller = new RoomRequestJoin(_useCase, _hubContext, _logger);
 
         var context = new DefaultHttpContext();
         context.Request.Path = "/v1/rooms/join-requests";

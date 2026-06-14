@@ -14,8 +14,7 @@ namespace Wolfremium.Estimados.Controllers.V1.RoomAccess;
 public class RoomApproveJoinRequest(
     IApproveJoinRequestUseCase approveJoinRequestUseCase,
     IHubContext<RoomHub> hubContext,
-    ILogger<RoomApproveJoinRequest>? logger = null,
-    IHostEnvironment? env = null
+    ILogger<RoomApproveJoinRequest> logger
 ) : ControllerBase
 {
     [HttpPost("{roomId:guid}/join-requests/{requestId:guid}/approve")]
@@ -45,14 +44,9 @@ public class RoomApproveJoinRequest(
         {
             var groupName = $"room_{roomId}";
 
-            var isDev = env?.IsDevelopment() ??
-                        (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development");
-            if (isDev)
-            {
-                logger?.LogInformation(
-                    "Web API: Sending notification OnJoinRequestApproved to room {RoomId} for request {RequestId}.",
-                    roomId, requestId);
-            }
+            logger.LogInformation(
+                "Web API: Sending notification OnJoinRequestApproved to room {RoomId} for request {RequestId}.",
+                roomId, requestId);
 
             await hubContext.Clients.Group(groupName).SendAsync("OnJoinRequestApproved", requestId);
             return Unit.Default;

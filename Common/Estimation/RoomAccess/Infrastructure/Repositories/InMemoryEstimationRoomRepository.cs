@@ -1,28 +1,34 @@
+using System;
 using System.Collections.Concurrent;
-using Common.Estimation.RoomAccess.Domain.Models;
-using Common.Estimation.RoomAccess.Domain.Ports;
+using System.Linq;
+using System.Threading.Tasks;
 using LanguageExt;
 using LanguageExt.Common;
-using Microsoft.Extensions.Hosting;
+using Common.Estimation.RoomAccess.Domain.Models;
+using Common.Estimation.RoomAccess.Domain.Ports;
 using Microsoft.Extensions.Logging;
 using static Common.Estimation.RoomAccess.Domain.Errors.RoomAccessErrors;
 
 namespace Common.Estimation.RoomAccess.Infrastructure.Repositories;
 
 public class InMemoryEstimationRoomRepository(
-    ILogger<InMemoryEstimationRoomRepository>? logger = null,
-    IHostEnvironment? env = null
+    ILogger<InMemoryEstimationRoomRepository> logger
 ) : IEstimationRoomRepository
 {
     private static readonly ConcurrentDictionary<Guid, EstimationRoom> Rooms = new();
 
     public Task<Either<Error, EstimationRoom>> FindById(RoomId roomId)
     {
+        logger.LogInformation("In-memory repository: Finding room {RoomId}...", roomId.Value);
+        
         if (Rooms.TryGetValue(roomId.Value, out var room))
         {
+            logger.LogInformation("In-memory repository: Found room {RoomId}. Active: {IsActive}, Participants: {ParticipantCount}.", 
+                room.Id.Value, room.IsActive, room.ActiveParticipants.Count);
             return Task.FromResult<Either<Error, EstimationRoom>>(room);
         }
 
+        logger.LogInformation("In-memory repository: Room {RoomId} was not found.", roomId.Value);
         return Task.FromResult<Either<Error, EstimationRoom>>(
             Error.New(new RoomNotFoundException($"Room with ID {roomId.Value} was not found."))
         );
@@ -30,16 +36,23 @@ public class InMemoryEstimationRoomRepository(
 
     public Task<Either<Error, Unit>> Save(EstimationRoom room)
     {
+        var isNew = !Rooms.ContainsKey(room.Id.Value);
         Rooms[room.Id.Value] = room;
-
-        var isDev = env?.IsDevelopment() ??
-                    (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development");
-        if (isDev)
+        
+        var participantNames = string.Join(", ", room.ActiveParticipants.Select(p => $"{p.Name.Value} ({p.Role.Value})"));
+        var pendingRequests = string.Join(", ", room.JoinRequests.Where(r => r.Status == JoinRequestStatus.Pending).Select(r => r.Id.Value.ToString()));
+        
+        if (isNew)
         {
-            logger?.LogInformation("In-memory repository: Saved room {RoomId} with moderator {ModeratorName}.",
+            logger.LogInformation("In-memory repository: Created room {RoomId} with moderator {ModeratorName}.", 
                 room.Id.Value, room.ModeratorName.Value);
         }
-
+        else
+        {
+            logger.LogInformation("In-memory repository: Updated room {RoomId}. Active: {IsActive}, Active Participants: [{Participants}], Pending Requests: [{PendingRequests}].", 
+                room.Id.Value, room.IsActive, participantNames, pendingRequests);
+        }
+        
         return Task.FromResult<Either<Error, Unit>>(Unit.Default);
     }
 

@@ -14,8 +14,7 @@ namespace Wolfremium.Estimados.Controllers.V1.RoomAccess;
 public class RoomRejectJoinRequest(
     IRejectJoinRequestUseCase rejectJoinRequestUseCase,
     IHubContext<RoomHub> hubContext,
-    ILogger<RoomRejectJoinRequest>? logger = null,
-    IHostEnvironment? env = null
+    ILogger<RoomRejectJoinRequest> logger
 ) : ControllerBase
 {
     [HttpPost("{roomId:guid}/join-requests/{requestId:guid}/reject")]
@@ -45,14 +44,9 @@ public class RoomRejectJoinRequest(
         {
             var groupName = $"room_{roomId}";
 
-            var isDev = env?.IsDevelopment() ??
-                        (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development");
-            if (isDev)
-            {
-                logger?.LogInformation(
-                    "Web API: Sending notification OnJoinRequestRejected to room {RoomId} for request {RequestId}.",
-                    roomId, requestId);
-            }
+            logger.LogInformation(
+                "Web API: Sending notification OnJoinRequestRejected to room {RoomId} for request {RequestId}.",
+                roomId, requestId);
 
             await hubContext.Clients.Group(groupName).SendAsync("OnJoinRequestRejected", requestId);
             return Unit.Default;
