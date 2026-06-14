@@ -1,8 +1,6 @@
 using System.Collections.Concurrent;
 using Common.Estimation.RoomAccess.Application.Contracts;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Hosting;
 
 namespace Wolfremium.Estimados.Hubs;
 
@@ -23,7 +21,8 @@ public class RoomHub(
 
         if (env.IsDevelopment())
         {
-            logger.LogInformation("SignalR Hub: Connection {ConnectionId} joined room {RoomId} as Moderator.", Context.ConnectionId, roomId);
+            logger.LogInformation("SignalR Hub: Connection {ConnectionId} joined room {RoomId} as Moderator.",
+                Context.ConnectionId, roomId);
         }
     }
 
@@ -35,7 +34,8 @@ public class RoomHub(
 
         if (env.IsDevelopment())
         {
-            logger.LogInformation("SignalR Hub: Connection {ConnectionId} joined room {RoomId} as Participant.", Context.ConnectionId, roomId);
+            logger.LogInformation("SignalR Hub: Connection {ConnectionId} joined room {RoomId} as Participant.",
+                Context.ConnectionId, roomId);
         }
     }
 
@@ -45,8 +45,11 @@ public class RoomHub(
         {
             if (env.IsDevelopment())
             {
-                logger.LogInformation("SignalR Hub: Moderator connection {ConnectionId} disconnected from room {RoomId}. Closing room...", Context.ConnectionId, roomId);
+                logger.LogInformation(
+                    "SignalR Hub: Moderator connection {ConnectionId} disconnected from room {RoomId}. Closing room...",
+                    Context.ConnectionId, roomId);
             }
+
             _ = await disconnectModeratorUseCase.Execute(new DisconnectModeratorCommand(roomId));
             await Clients.Group($"room_{roomId}").SendAsync("OnRoomClosed");
         }
@@ -55,7 +58,9 @@ public class RoomHub(
         {
             if (env.IsDevelopment())
             {
-                logger.LogInformation("SignalR Hub: Participant connection {ConnectionId} disconnected from room {RoomId}.", Context.ConnectionId, pRoomId);
+                logger.LogInformation(
+                    "SignalR Hub: Participant connection {ConnectionId} disconnected from room {RoomId}.",
+                    Context.ConnectionId, pRoomId);
             }
         }
 

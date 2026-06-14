@@ -1,9 +1,8 @@
 using Common.Estimation.RoomAccess.Application.Contracts;
 using LanguageExt;
+using LanguageExt.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Hosting;
 using Wolfremium.Estimados.Hubs;
 using static Wolfremium.Estimados.Controllers.RoomAccessErrorsWeb;
 
@@ -40,16 +39,19 @@ public class RoomApproveJoinRequest(
             error => Results.Problem(MapToProblemDetails(error, HttpContext))
         );
 
-    private async Task<Either<LanguageExt.Common.Error, Unit>> NotifyApplicantApproved(Guid roomId, Guid requestId)
+    private async Task<Either<Error, Unit>> NotifyApplicantApproved(Guid roomId, Guid requestId)
     {
         try
         {
             var groupName = $"room_{roomId}";
-            
-            var isDev = env?.IsDevelopment() ?? (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development");
+
+            var isDev = env?.IsDevelopment() ??
+                        (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development");
             if (isDev)
             {
-                logger?.LogInformation("Web API: Sending notification OnJoinRequestApproved to room {RoomId} for request {RequestId}.", roomId, requestId);
+                logger?.LogInformation(
+                    "Web API: Sending notification OnJoinRequestApproved to room {RoomId} for request {RequestId}.",
+                    roomId, requestId);
             }
 
             await hubContext.Clients.Group(groupName).SendAsync("OnJoinRequestApproved", requestId);
@@ -57,7 +59,7 @@ public class RoomApproveJoinRequest(
         }
         catch (Exception ex)
         {
-            return LanguageExt.Common.Error.New(ex);
+            return Error.New(ex);
         }
     }
 }

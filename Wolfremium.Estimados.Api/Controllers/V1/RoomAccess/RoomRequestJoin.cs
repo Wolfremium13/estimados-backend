@@ -1,10 +1,9 @@
 using System.Text.Json.Serialization;
 using Common.Estimation.RoomAccess.Application.Contracts;
 using LanguageExt;
+using LanguageExt.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Hosting;
 using Wolfremium.Estimados.Hubs;
 using static Wolfremium.Estimados.Controllers.RoomAccessErrorsWeb;
 
@@ -43,16 +42,19 @@ public class RoomRequestJoin(
             error => Results.Problem(MapToProblemDetails(error, HttpContext))
         );
 
-    private async Task<Either<LanguageExt.Common.Error, Unit>> NotifyModerator(JoinRequestInfo info)
+    private async Task<Either<Error, Unit>> NotifyModerator(JoinRequestInfo info)
     {
         try
         {
             var groupName = $"room_{info.RoomId}";
-            
-            var isDev = env?.IsDevelopment() ?? (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development");
+
+            var isDev = env?.IsDevelopment() ??
+                        (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development");
             if (isDev)
             {
-                logger?.LogInformation("Web API: Sending notification OnJoinRequestReceived to room {RoomId} for participant {ParticipantName} ({ParticipantRole}).", info.RoomId, info.ParticipantName, info.ParticipantRole);
+                logger?.LogInformation(
+                    "Web API: Sending notification OnJoinRequestReceived to room {RoomId} for participant {ParticipantName} ({ParticipantRole}).",
+                    info.RoomId, info.ParticipantName, info.ParticipantRole);
             }
 
             await hubContext.Clients.Group(groupName).SendAsync("OnJoinRequestReceived", info.RequestId,
@@ -61,7 +63,7 @@ public class RoomRequestJoin(
         }
         catch (Exception ex)
         {
-            return LanguageExt.Common.Error.New(ex);
+            return Error.New(ex);
         }
     }
 }

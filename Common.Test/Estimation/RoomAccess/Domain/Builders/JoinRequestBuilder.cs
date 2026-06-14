@@ -1,4 +1,3 @@
-using System;
 using Common.Estimation.RoomAccess.Domain.Models;
 
 namespace Common.Test.Estimation.RoomAccess.Domain.Builders;
@@ -12,8 +11,10 @@ public class JoinRequestBuilder
     public JoinRequest Build()
     {
         var id = RequestId.Create(_id).Match(r => r, error => throw new InvalidOperationException(error.Message));
-        var name = ParticipantName.Create(_name).Match(n => n, error => throw new InvalidOperationException(error.Message));
-        var role = ParticipantRole.Create(_role).Match(r => r, error => throw new InvalidOperationException(error.Message));
+        var name = ParticipantName.Create(_name)
+            .Match(n => n, error => throw new InvalidOperationException(error.Message));
+        var role = ParticipantRole.Create(_role)
+            .Match(r => r, error => throw new InvalidOperationException(error.Message));
 
         return JoinRequest.Create(id, name, role).Match(
             request => request,

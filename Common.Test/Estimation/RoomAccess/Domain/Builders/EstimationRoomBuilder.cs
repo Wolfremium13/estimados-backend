@@ -1,20 +1,19 @@
-using System;
-using System.Collections.Generic;
 using Common.Estimation.RoomAccess.Domain.Models;
 
 namespace Common.Test.Estimation.RoomAccess.Domain.Builders;
 
 public class EstimationRoomBuilder
 {
-    private Guid _id = Guid.NewGuid();
-    private string _moderatorName = "Carlos";
     private readonly List<JoinRequest> _joinRequests = new();
+    private Guid _id = Guid.NewGuid();
     private bool _isActive = true;
+    private string _moderatorName = "Carlos";
 
     public EstimationRoom Build()
     {
         var roomId = RoomId.Create(_id).Match(r => r, error => throw new InvalidOperationException(error.Message));
-        var name = ParticipantName.Create(_moderatorName).Match(n => n, error => throw new InvalidOperationException(error.Message));
+        var name = ParticipantName.Create(_moderatorName)
+            .Match(n => n, error => throw new InvalidOperationException(error.Message));
 
         var room = EstimationRoom.Create(roomId, name).Match(
             r => r,

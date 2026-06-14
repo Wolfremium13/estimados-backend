@@ -1,14 +1,13 @@
-using System;
-using System.Threading.Tasks;
-using Xunit;
-using Shouldly;
-using NSubstitute;
-using LanguageExt;
-using Common.Estimation.RoomAccess.Domain.Models;
-using Common.Estimation.RoomAccess.Domain.Ports;
 using Common.Estimation.RoomAccess.Application.Contracts;
 using Common.Estimation.RoomAccess.Application.UseCases;
+using Common.Estimation.RoomAccess.Domain.Models;
+using Common.Estimation.RoomAccess.Domain.Ports;
 using Common.Test.Estimation.RoomAccess.Domain.Builders;
+using LanguageExt;
+using LanguageExt.Common;
+using NSubstitute;
+using Shouldly;
+using Xunit;
 using static Common.Estimation.RoomAccess.Domain.Errors.RoomAccessErrors;
 
 namespace Common.Test.Estimation.RoomAccess.Application.UseCases;
@@ -16,9 +15,9 @@ namespace Common.Test.Estimation.RoomAccess.Application.UseCases;
 public class DisconnectModeratorUseCaseShould
 {
     private readonly IEstimationRoomRepository _repository = Substitute.For<IEstimationRoomRepository>();
-    private readonly DisconnectModeratorUseCase _useCase;
-    private readonly Guid _roomId = Guid.NewGuid();
     private readonly EstimationRoom _room;
+    private readonly Guid _roomId = Guid.NewGuid();
+    private readonly DisconnectModeratorUseCase _useCase;
 
     public DisconnectModeratorUseCaseShould()
     {
@@ -46,7 +45,7 @@ public class DisconnectModeratorUseCaseShould
     [Fact]
     public async Task FailWhenRoomNotFound()
     {
-        _repository.FindById(Arg.Any<RoomId>()).Returns(LanguageExt.Common.Error.New(new RoomNotFoundException("Not found")));
+        _repository.FindById(Arg.Any<RoomId>()).Returns(Error.New(new RoomNotFoundException("Not found")));
 
         var result = await _useCase.Execute(new DisconnectModeratorCommand(_roomId));
 

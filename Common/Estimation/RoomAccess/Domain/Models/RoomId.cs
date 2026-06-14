@@ -1,4 +1,3 @@
-using System;
 using LanguageExt;
 using LanguageExt.Common;
 using static Common.Estimation.RoomAccess.Domain.Errors.RoomAccessErrors;
@@ -7,9 +6,8 @@ namespace Common.Estimation.RoomAccess.Domain.Models;
 
 public record RoomId
 {
-    public Guid Value { get; }
-
     private RoomId(Guid value) => Value = value;
+    public Guid Value { get; }
 
     public static Either<Error, RoomId> Create(Guid value) =>
         value == Guid.Empty

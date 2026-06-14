@@ -1,35 +1,33 @@
-using System;
-using System.Threading.Tasks;
+using Common.Estimation.RoomAccess.Application.Contracts;
+using LanguageExt.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Xunit;
-using Shouldly;
 using NSubstitute;
-using LanguageExt;
-using Common.Estimation.RoomAccess.Application.Contracts;
+using Shouldly;
 using Wolfremium.Estimados.Controllers.V1.RoomAccess;
 using Wolfremium.Estimados.Hubs;
+using Xunit;
 using static Common.Estimation.RoomAccess.Domain.Errors.RoomAccessErrors;
 
 namespace Wolfremium.Estimados.Api.Test.RoomAccess.Unit.Controllers;
 
 public class RoomApproveJoinRequestShould
 {
-    private readonly IApproveJoinRequestUseCase _useCase = Substitute.For<IApproveJoinRequestUseCase>();
-    private readonly IHubContext<RoomHub> _hubContext = Substitute.For<IHubContext<RoomHub>>();
-    private readonly IHubClients _hubClients = Substitute.For<IHubClients>();
     private readonly IClientProxy _clientProxy = Substitute.For<IClientProxy>();
     private readonly RoomApproveJoinRequest _controller;
+    private readonly IHubClients _hubClients = Substitute.For<IHubClients>();
+    private readonly IHubContext<RoomHub> _hubContext = Substitute.For<IHubContext<RoomHub>>();
+    private readonly IApproveJoinRequestUseCase _useCase = Substitute.For<IApproveJoinRequestUseCase>();
 
     public RoomApproveJoinRequestShould()
     {
         _hubContext.Clients.Returns(_hubClients);
         _hubClients.Group(Arg.Any<string>()).Returns(_clientProxy);
-        
+
         _controller = new RoomApproveJoinRequest(_useCase, _hubContext);
-        
+
         var context = new DefaultHttpContext();
         context.Request.Path = "/v1/rooms/approve";
         _controller.ControllerContext = new ControllerContext
@@ -48,11 +46,12 @@ public class RoomApproveJoinRequestShould
         var result = await _controller.Approve(roomId, requestId);
 
         result.ShouldBeOfType<Ok>();
-        await _useCase.Received(1).Execute(Arg.Is<ApproveJoinRequestCommand>(c => c.RoomId == roomId && c.RequestId == requestId));
+        await _useCase.Received(1)
+            .Execute(Arg.Is<ApproveJoinRequestCommand>(c => c.RoomId == roomId && c.RequestId == requestId));
         await _clientProxy.Received(1).SendCoreAsync(
             "OnJoinRequestApproved",
             Arg.Is<object[]>(args => args.Length == 1 && (Guid)args[0] == requestId),
-            Arg.Any<System.Threading.CancellationToken>()
+            Arg.Any<CancellationToken>()
         );
     }
 
@@ -61,7 +60,7 @@ public class RoomApproveJoinRequestShould
     {
         var roomId = Guid.NewGuid();
         var requestId = Guid.NewGuid();
-        var error = LanguageExt.Common.Error.New(new RoomClosedException("Room is closed"));
+        var error = Error.New(new RoomClosedException("Room is closed"));
         _useCase.Execute(Arg.Any<ApproveJoinRequestCommand>()).Returns(error);
 
         var result = await _controller.Approve(roomId, requestId);
@@ -69,11 +68,11 @@ public class RoomApproveJoinRequestShould
         var problemResult = result.ShouldBeOfType<ProblemHttpResult>();
         problemResult.StatusCode.ShouldBe(StatusCodes.Status400BadRequest);
         problemResult.ProblemDetails.Detail.ShouldBe("Room is closed");
-        
+
         await _clientProxy.DidNotReceive().SendCoreAsync(
             Arg.Any<string>(),
             Arg.Any<object[]>(),
-            Arg.Any<System.Threading.CancellationToken>()
+            Arg.Any<CancellationToken>()
         );
     }
 }

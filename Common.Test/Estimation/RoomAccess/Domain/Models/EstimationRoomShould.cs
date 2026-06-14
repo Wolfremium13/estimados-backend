@@ -1,8 +1,7 @@
-using System;
-using Xunit;
-using Shouldly;
 using Common.Estimation.RoomAccess.Domain.Models;
 using Common.Test.Estimation.RoomAccess.Domain.Builders;
+using Shouldly;
+using Xunit;
 using static Common.Estimation.RoomAccess.Domain.Errors.RoomAccessErrors;
 
 namespace Common.Test.Estimation.RoomAccess.Domain.Models;
@@ -23,7 +22,8 @@ public class EstimationRoomShould
             success.Id.ShouldBe(roomId);
             success.ModeratorName.ShouldBe(moderatorName);
             success.IsActive.ShouldBeTrue();
-            success.ActiveParticipants.ShouldContain(p => p.Name.Value == "Carlos" && p.Role.Value == ParticipantRole.Moderador);
+            success.ActiveParticipants.ShouldContain(p =>
+                p.Name.Value == "Carlos" && p.Role.Value == ParticipantRole.Moderador);
         });
     }
 
@@ -70,7 +70,8 @@ public class EstimationRoomShould
     public void ApproveJoinRequestAndAddParticipantCorrectly()
     {
         var requestId = Guid.NewGuid();
-        var request = new JoinRequestBuilder().WithId(requestId).WithName("Ana").WithRole(ParticipantRole.Developer).Build();
+        var request = new JoinRequestBuilder().WithId(requestId).WithName("Ana").WithRole(ParticipantRole.Developer)
+            .Build();
         var room = new EstimationRoomBuilder().WithJoinRequest(request).Build();
 
         var result = room.ApproveJoinRequest(new RequestIdBuilder().WithValue(requestId).Build());
@@ -148,7 +149,7 @@ public class EstimationRoomShould
         var requestApproved = new JoinRequestBuilder().WithName("Ana").Build();
         var requestPending = new JoinRequestBuilder().WithName("Bob").Build();
         requestApproved.Approve();
-        
+
         var room = new EstimationRoomBuilder()
             .WithJoinRequest(requestApproved)
             .WithJoinRequest(requestPending)

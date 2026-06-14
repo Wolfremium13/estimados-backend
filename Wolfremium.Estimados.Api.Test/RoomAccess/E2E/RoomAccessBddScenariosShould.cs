@@ -1,15 +1,12 @@
-using System;
 using System.Net;
-using System.Net.Http;
 using System.Net.Http.Json;
-using System.Threading.Tasks;
+using Common.Estimation.RoomAccess.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.AspNetCore.Http.Connections;
 using Shouldly;
-using Xunit;
-using Common.Estimation.RoomAccess.Infrastructure.Repositories;
 using Wolfremium.Estimados.Controllers.V1.RoomAccess;
+using Xunit;
 
 namespace Wolfremium.Estimados.Api.Test.RoomAccess.E2E;
 
@@ -22,6 +19,11 @@ public class RoomAccessBddScenariosShould : IClassFixture<WebApplicationFactory<
     {
         _factory = factory;
         _httpClient = factory.CreateClient();
+        InMemoryEstimationRoomRepository.Clear();
+    }
+
+    public void Dispose()
+    {
         InMemoryEstimationRoomRepository.Clear();
     }
 
@@ -53,10 +55,8 @@ public class RoomAccessBddScenariosShould : IClassFixture<WebApplicationFactory<
         await hubConnectionCarlos.InvokeAsync("JoinRoomAsModerator", roomId);
 
         var requestReceivedTask = new TaskCompletionSource<(Guid RequestId, string Name, string Role)>();
-        hubConnectionCarlos.On<Guid, string, string>("OnJoinRequestReceived", (reqId, name, role) =>
-        {
-            requestReceivedTask.SetResult((reqId, name, role));
-        });
+        hubConnectionCarlos.On<Guid, string, string>("OnJoinRequestReceived",
+            (reqId, name, role) => { requestReceivedTask.SetResult((reqId, name, role)); });
 
         var joinPayload = new { name = "Ana", role = "Developer" };
         var joinResponse = await _httpClient.PostAsJsonAsync($"v1/rooms/{roomId}/join-requests", joinPayload);
@@ -69,10 +69,7 @@ public class RoomAccessBddScenariosShould : IClassFixture<WebApplicationFactory<
         await hubConnectionAna.InvokeAsync("JoinRoomAsParticipant", roomId);
 
         var requestApprovedTask = new TaskCompletionSource<Guid>();
-        hubConnectionAna.On<Guid>("OnJoinRequestApproved", reqId =>
-        {
-            requestApprovedTask.SetResult(reqId);
-        });
+        hubConnectionAna.On<Guid>("OnJoinRequestApproved", reqId => { requestApprovedTask.SetResult(reqId); });
 
         var receivedData = await requestReceivedTask.Task;
         receivedData.RequestId.ShouldBe(requestId);
@@ -98,10 +95,8 @@ public class RoomAccessBddScenariosShould : IClassFixture<WebApplicationFactory<
         await hubConnectionCarlos.InvokeAsync("JoinRoomAsModerator", roomId);
 
         var requestReceivedTask = new TaskCompletionSource<(Guid RequestId, string Name, string Role)>();
-        hubConnectionCarlos.On<Guid, string, string>("OnJoinRequestReceived", (reqId, name, role) =>
-        {
-            requestReceivedTask.SetResult((reqId, name, role));
-        });
+        hubConnectionCarlos.On<Guid, string, string>("OnJoinRequestReceived",
+            (reqId, name, role) => { requestReceivedTask.SetResult((reqId, name, role)); });
 
         var joinPayload = new { name = "Ana Developer", role = "Developer" };
         var joinResponse = await _httpClient.PostAsJsonAsync($"v1/rooms/{roomId}/join-requests", joinPayload);
@@ -136,10 +131,8 @@ public class RoomAccessBddScenariosShould : IClassFixture<WebApplicationFactory<
         await hubConnectionCarlos.InvokeAsync("JoinRoomAsModerator", roomId);
 
         var requestReceivedTask = new TaskCompletionSource<Guid>();
-        hubConnectionCarlos.On<Guid, string, string>("OnJoinRequestReceived", (reqId, _, _) =>
-        {
-            requestReceivedTask.SetResult(reqId);
-        });
+        hubConnectionCarlos.On<Guid, string, string>("OnJoinRequestReceived",
+            (reqId, _, _) => { requestReceivedTask.SetResult(reqId); });
 
         var joinPayload = new { name = "Bob", role = "Product Owner" };
         var joinResponse = await _httpClient.PostAsJsonAsync($"v1/rooms/{roomId}/join-requests", joinPayload);
@@ -151,10 +144,7 @@ public class RoomAccessBddScenariosShould : IClassFixture<WebApplicationFactory<
         await hubConnectionBob.InvokeAsync("JoinRoomAsParticipant", roomId);
 
         var requestRejectedTask = new TaskCompletionSource<Guid>();
-        hubConnectionBob.On<Guid>("OnJoinRequestRejected", reqId =>
-        {
-            requestRejectedTask.SetResult(reqId);
-        });
+        hubConnectionBob.On<Guid>("OnJoinRequestRejected", reqId => { requestRejectedTask.SetResult(reqId); });
 
         var receivedId = await requestReceivedTask.Task;
         receivedId.ShouldBe(requestId);
@@ -186,7 +176,8 @@ public class RoomAccessBddScenariosShould : IClassFixture<WebApplicationFactory<
         var responseEmptyRole = await _httpClient.PostAsJsonAsync($"v1/rooms/{roomId}/join-requests", payloadEmptyRole);
 
         var payloadInvalidRole = new { name = "Ana", role = "Manager" };
-        var responseInvalidRole = await _httpClient.PostAsJsonAsync($"v1/rooms/{roomId}/join-requests", payloadInvalidRole);
+        var responseInvalidRole =
+            await _httpClient.PostAsJsonAsync($"v1/rooms/{roomId}/join-requests", payloadInvalidRole);
 
         responseEmptyName.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         responseEmptyRole.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
@@ -212,21 +203,13 @@ public class RoomAccessBddScenariosShould : IClassFixture<WebApplicationFactory<
         await hubConnectionAna.InvokeAsync("JoinRoomAsParticipant", roomId);
 
         var roomClosedTask = new TaskCompletionSource<bool>();
-        hubConnectionAna.On("OnRoomClosed", () =>
-        {
-            roomClosedTask.SetResult(true);
-        });
+        hubConnectionAna.On("OnRoomClosed", () => { roomClosedTask.SetResult(true); });
 
         await hubConnectionCarlos.StopAsync();
         await hubConnectionCarlos.DisposeAsync();
 
         var roomClosedTriggered = await roomClosedTask.Task;
         roomClosedTriggered.ShouldBeTrue();
-    }
-
-    public void Dispose()
-    {
-        InMemoryEstimationRoomRepository.Clear();
     }
 
     private HubConnection CreateHubConnection(Guid roomId)

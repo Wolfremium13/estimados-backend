@@ -1,14 +1,13 @@
-using System;
-using System.Threading.Tasks;
-using Xunit;
-using Shouldly;
-using NSubstitute;
-using LanguageExt;
-using Common.Estimation.RoomAccess.Domain.Models;
-using Common.Estimation.RoomAccess.Domain.Ports;
 using Common.Estimation.RoomAccess.Application.Contracts;
 using Common.Estimation.RoomAccess.Application.UseCases;
+using Common.Estimation.RoomAccess.Domain.Models;
+using Common.Estimation.RoomAccess.Domain.Ports;
 using Common.Test.Estimation.RoomAccess.Domain.Builders;
+using LanguageExt;
+using LanguageExt.Common;
+using NSubstitute;
+using Shouldly;
+using Xunit;
 using static Common.Estimation.RoomAccess.Domain.Errors.RoomAccessErrors;
 
 namespace Common.Test.Estimation.RoomAccess.Application.UseCases;
@@ -16,17 +15,18 @@ namespace Common.Test.Estimation.RoomAccess.Application.UseCases;
 public class RejectJoinRequestUseCaseShould
 {
     private readonly IEstimationRoomRepository _repository = Substitute.For<IEstimationRoomRepository>();
-    private readonly RejectJoinRequestUseCase _useCase;
-    private readonly Guid _roomId = Guid.NewGuid();
     private readonly Guid _requestId = Guid.NewGuid();
     private readonly EstimationRoom _room;
+    private readonly Guid _roomId = Guid.NewGuid();
+    private readonly RejectJoinRequestUseCase _useCase;
 
     public RejectJoinRequestUseCaseShould()
     {
         _useCase = new RejectJoinRequestUseCase(_repository);
-        
+
         var request = new JoinRequestBuilder().WithId(_requestId).WithName("Bob").WithRole("Product Owner").Build();
-        _room = new EstimationRoomBuilder().WithId(_roomId).WithModeratorName("Carlos").WithJoinRequest(request).Build();
+        _room = new EstimationRoomBuilder().WithId(_roomId).WithModeratorName("Carlos").WithJoinRequest(request)
+            .Build();
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public class RejectJoinRequestUseCaseShould
     [Fact]
     public async Task FailWhenRoomNotFound()
     {
-        _repository.FindById(Arg.Any<RoomId>()).Returns(LanguageExt.Common.Error.New(new RoomNotFoundException("Not found")));
+        _repository.FindById(Arg.Any<RoomId>()).Returns(Error.New(new RoomNotFoundException("Not found")));
 
         var result = await _useCase.Execute(new RejectJoinRequestCommand(_roomId, _requestId));
 
@@ -82,7 +82,8 @@ public class RejectJoinRequestUseCaseShould
     public async Task FailWhenRoomIsClosed()
     {
         var request = new JoinRequestBuilder().WithId(_requestId).WithName("Bob").WithRole("Product Owner").Build();
-        var closedRoom = new EstimationRoomBuilder().WithId(_roomId).WithModeratorName("Carlos").WithJoinRequest(request).AsClosed().Build();
+        var closedRoom = new EstimationRoomBuilder().WithId(_roomId).WithModeratorName("Carlos")
+            .WithJoinRequest(request).AsClosed().Build();
         _repository.FindById(Arg.Any<RoomId>()).Returns(closedRoom);
 
         var result = await _useCase.Execute(new RejectJoinRequestCommand(_roomId, _requestId));
