@@ -1,0 +1,16 @@
+@host = http://localhost:5011
+
+### Request to Join Room (Requires roomId variable from CreateRoom.http)
+POST {{host}}/v1/rooms/{{roomId}}/join-requests
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Ana",
+  "role": "Developer"
+}
+
+> {%
+    client.global.set("requestId", response.body.requestId);
+    client.log("Captured requestId: " + response.body.requestId);
+%}

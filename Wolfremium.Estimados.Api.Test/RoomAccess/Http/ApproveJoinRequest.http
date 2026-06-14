@@ -1,0 +1,5 @@
+@host = http://localhost:5011
+
+### Approve Join Request (Requires roomId and requestId variables)
+POST {{host}}/v1/rooms/{{roomId}}/join-requests/{{requestId}}/approve
+Accept: application/json

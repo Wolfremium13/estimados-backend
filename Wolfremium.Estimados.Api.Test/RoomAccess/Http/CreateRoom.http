@@ -1,0 +1,10 @@
+@host = http://localhost:5011
+
+### Create Room
+POST {{host}}/v1/rooms?moderatorName=Carlos
+Accept: application/json
+
+> {%
+    client.global.set("roomId", response.body.roomId);
+    client.log("Captured roomId: " + response.body.roomId);
+%}

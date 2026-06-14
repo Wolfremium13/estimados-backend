@@ -1,7 +1,7 @@
-﻿services:
+services:
   wolfremium.estimados:
     image: wolfremium.estimados
     build:
       context: .
-      dockerfile: Wolfremium.Estimados/Dockerfile
+      dockerfile: Wolfremium.Estimados.Api/Dockerfile
 
