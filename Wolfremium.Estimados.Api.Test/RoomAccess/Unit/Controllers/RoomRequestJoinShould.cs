@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Shouldly;
 using Wolfremium.Estimados.Controllers.V1.RoomAccess;
@@ -11,17 +12,15 @@ using Wolfremium.Estimados.Hubs;
 using Xunit;
 using static Common.Estimation.RoomAccess.Domain.Errors.RoomAccessErrors;
 
-using Microsoft.Extensions.Logging;
-
 namespace Wolfremium.Estimados.Api.Test.RoomAccess.Unit.Controllers;
 
 public class RoomRequestJoinShould
 {
     private readonly IClientProxy _clientProxy = Substitute.For<IClientProxy>();
-    private readonly ILogger<RoomRequestJoin> _logger = Substitute.For<ILogger<RoomRequestJoin>>();
     private readonly RoomRequestJoin _controller;
     private readonly IHubClients _hubClients = Substitute.For<IHubClients>();
     private readonly IHubContext<RoomHub> _hubContext = Substitute.For<IHubContext<RoomHub>>();
+    private readonly ILogger<RoomRequestJoin> _logger = Substitute.For<ILogger<RoomRequestJoin>>();
     private readonly IRequestToJoinUseCase _useCase = Substitute.For<IRequestToJoinUseCase>();
 
     public RoomRequestJoinShould()

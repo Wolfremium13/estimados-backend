@@ -20,15 +20,9 @@ public class EstimationRoomBuilder
             error => throw new InvalidOperationException($"Failed to build EstimationRoom: {error.Message}")
         );
 
-        foreach (var req in _joinRequests)
-        {
-            room.AddJoinRequest(req);
-        }
+        foreach (var req in _joinRequests) room.AddJoinRequest(req);
 
-        if (!_isActive)
-        {
-            room.Close();
-        }
+        if (!_isActive) room.Close();
 
         return room;
     }

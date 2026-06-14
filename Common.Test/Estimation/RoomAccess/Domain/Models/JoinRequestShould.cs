@@ -1,7 +1,7 @@
-using Xunit;
-using Shouldly;
 using Common.Estimation.RoomAccess.Domain.Models;
 using Common.Test.Estimation.RoomAccess.Domain.Builders;
+using Shouldly;
+using Xunit;
 
 namespace Common.Test.Estimation.RoomAccess.Domain.Models;
 

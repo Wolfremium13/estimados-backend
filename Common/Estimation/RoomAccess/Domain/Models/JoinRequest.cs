@@ -12,11 +12,6 @@ public enum JoinRequestStatus
 
 public class JoinRequest
 {
-    public RequestId Id { get; }
-    public ParticipantName Name { get; }
-    public ParticipantRole Role { get; }
-    public JoinRequestStatus Status { get; private set; }
-
     private JoinRequest(RequestId id, ParticipantName name, ParticipantRole role, JoinRequestStatus status)
     {
         Id = id;
@@ -25,10 +20,23 @@ public class JoinRequest
         Status = status;
     }
 
-    public static Either<Error, JoinRequest> Create(RequestId id, ParticipantName name, ParticipantRole role) =>
-        new JoinRequest(id, name, role, JoinRequestStatus.Pending);
+    public RequestId Id { get; }
+    public ParticipantName Name { get; }
+    public ParticipantRole Role { get; }
+    public JoinRequestStatus Status { get; private set; }
 
-    public void Approve() => Status = JoinRequestStatus.Approved;
+    public static Either<Error, JoinRequest> Create(RequestId id, ParticipantName name, ParticipantRole role)
+    {
+        return new JoinRequest(id, name, role, JoinRequestStatus.Pending);
+    }
 
-    public void Reject() => Status = JoinRequestStatus.Rejected;
+    public void Approve()
+    {
+        Status = JoinRequestStatus.Approved;
+    }
+
+    public void Reject()
+    {
+        Status = JoinRequestStatus.Rejected;
+    }
 }

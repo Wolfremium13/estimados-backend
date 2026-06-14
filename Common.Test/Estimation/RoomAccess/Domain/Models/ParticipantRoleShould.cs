@@ -1,6 +1,6 @@
-using Xunit;
-using Shouldly;
 using Common.Estimation.RoomAccess.Domain.Models;
+using Shouldly;
+using Xunit;
 using static Common.Estimation.RoomAccess.Domain.Errors.RoomAccessErrors;
 
 namespace Common.Test.Estimation.RoomAccess.Domain.Models;
@@ -46,8 +46,8 @@ public class ParticipantRoleShould
     [Fact]
     public void CorrectlyIdentifyModeratorRole()
     {
-        var moderatorRole = ParticipantRole.Create("Moderador").Match(r => r, _ => throw new System.Exception());
-        var developerRole = ParticipantRole.Create("Developer").Match(r => r, _ => throw new System.Exception());
+        var moderatorRole = ParticipantRole.Create("Moderador").Match(r => r, _ => throw new Exception());
+        var developerRole = ParticipantRole.Create("Developer").Match(r => r, _ => throw new Exception());
 
         moderatorRole.IsModerator.ShouldBeTrue();
         developerRole.IsModerator.ShouldBeFalse();

@@ -17,17 +17,20 @@ public class RoomCreate(ICreateRoomUseCase createRoomUseCase) : ControllerBase
     [ProducesResponseType(typeof(RoomCreateResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<IResult> Create([FromQuery(Name = "moderatorName")] string moderatorName) =>
-        await (
+    public async Task<IResult> Create([FromQuery(Name = "moderatorName")] string moderatorName)
+    {
+        return await (
             from info in createRoomUseCase.Execute(new CreateRoomCommand(moderatorName)).ToAsync()
             select new RoomCreateResponse(info.RoomId, info.ModeratorName)
         ).Match<IResult>(
             success => Results.Ok(success),
             error => Results.Problem(MapToProblemDetails(error, HttpContext))
         );
+    }
 }
 
 public record RoomCreateResponse(
     [property: JsonPropertyName("roomId")] Guid RoomId,
-    [property: JsonPropertyName("moderatorName")] string ModeratorName
+    [property: JsonPropertyName("moderatorName")]
+    string ModeratorName
 );

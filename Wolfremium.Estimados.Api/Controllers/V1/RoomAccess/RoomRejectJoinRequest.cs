@@ -28,8 +28,9 @@ public class RoomRejectJoinRequest(
     public async Task<IResult> Reject(
         [FromRoute] Guid roomId,
         [FromRoute] Guid requestId
-    ) =>
-        await (
+    )
+    {
+        return await (
             from _ in rejectJoinRequestUseCase.Execute(new RejectJoinRequestCommand(roomId, requestId)).ToAsync()
             from __ in NotifyApplicantRejected(roomId, requestId).ToAsync()
             select Unit.Default
@@ -37,6 +38,7 @@ public class RoomRejectJoinRequest(
             success => Results.Ok(),
             error => Results.Problem(MapToProblemDetails(error, HttpContext))
         );
+    }
 
     private async Task<Either<Error, Unit>> NotifyApplicantRejected(Guid roomId, Guid requestId)
     {
@@ -45,11 +47,9 @@ public class RoomRejectJoinRequest(
             var groupName = $"room_{roomId}";
 
             if (logger.IsEnabled(LogLevel.Information))
-            {
                 logger.LogInformation(
                     "Web API: Sending notification OnJoinRequestRejected to room {RoomId} for request {RequestId}.",
                     roomId, requestId);
-            }
 
             await hubContext.Clients.Group(groupName).SendAsync("OnJoinRequestRejected", requestId);
             return Unit.Default;

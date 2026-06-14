@@ -26,6 +26,8 @@ public class RequestToJoinUseCase(
         );
     }
 
-    private Either<Error, JoinRequest> CreateJoinRequest(RequestId id, ParticipantName name, ParticipantRole role) =>
-        JoinRequest.Create(id, name, role);
+    private Either<Error, JoinRequest> CreateJoinRequest(RequestId id, ParticipantName name, ParticipantRole role)
+    {
+        return JoinRequest.Create(id, name, role);
+    }
 }

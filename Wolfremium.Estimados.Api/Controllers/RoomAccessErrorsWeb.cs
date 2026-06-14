@@ -9,7 +9,7 @@ public static class RoomAccessErrorsWeb
     public static ProblemDetails MapToProblemDetails(Error error, HttpContext context)
     {
         var exception = error.Exception.Case;
-        
+
         var statusCode = exception switch
         {
             ClientValidationException => StatusCodes.Status400BadRequest,

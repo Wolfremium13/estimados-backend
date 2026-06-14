@@ -30,8 +30,9 @@ public class RoomRequestJoin(
     public async Task<IResult> RequestJoin(
         [FromRoute] Guid roomId,
         [FromBody] RoomJoinRequestPayload payload
-    ) =>
-        await (
+    )
+    {
+        return await (
             from info in requestToJoinUseCase.Execute(new RequestToJoinCommand(roomId, payload.Name, payload.Role))
                 .ToAsync()
             from _ in NotifyModerator(info).ToAsync()
@@ -40,6 +41,7 @@ public class RoomRequestJoin(
             success => Results.Ok(success),
             error => Results.Problem(MapToProblemDetails(error, HttpContext))
         );
+    }
 
     private async Task<Either<Error, Unit>> NotifyModerator(JoinRequestInfo info)
     {
@@ -48,11 +50,9 @@ public class RoomRequestJoin(
             var groupName = $"room_{info.RoomId}";
 
             if (logger.IsEnabled(LogLevel.Information))
-            {
                 logger.LogInformation(
                     "Web API: Sending notification OnJoinRequestReceived to room {RoomId} for participant {ParticipantName} ({ParticipantRole}).",
                     info.RoomId, info.ParticipantName, info.ParticipantRole);
-            }
 
 
             await hubContext.Clients.Group(groupName).SendAsync("OnJoinRequestReceived", info.RequestId,

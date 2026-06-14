@@ -22,6 +22,8 @@ public class CreateRoomUseCase(
         );
     }
 
-    private static Either<Error, EstimationRoom> CreateRoom(RoomId id, ParticipantName name) =>
-        EstimationRoom.Create(id, name);
+    private static Either<Error, EstimationRoom> CreateRoom(RoomId id, ParticipantName name)
+    {
+        return EstimationRoom.Create(id, name);
+    }
 }

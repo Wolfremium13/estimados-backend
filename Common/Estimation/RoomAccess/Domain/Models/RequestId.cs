@@ -6,19 +6,30 @@ namespace Common.Estimation.RoomAccess.Domain.Models;
 
 public record RequestId
 {
-    private RequestId(Guid value) => Value = value;
+    private RequestId(Guid value)
+    {
+        Value = value;
+    }
+
     public Guid Value { get; }
 
-    public static Either<Error, RequestId> Create(Guid value) =>
-        value == Guid.Empty
+    public static Either<Error, RequestId> Create(Guid value)
+    {
+        return value == Guid.Empty
             ? Either<Error, RequestId>.Left(Error.New(new ClientValidationException("Request ID cannot be empty.")))
             : Either<Error, RequestId>.Right(new RequestId(value));
+    }
 
-    public static Either<Error, RequestId> Create(string value) =>
-        Guid.TryParse(value, out var guid)
+    public static Either<Error, RequestId> Create(string value)
+    {
+        return Guid.TryParse(value, out var guid)
             ? Create(guid)
             : Either<Error, RequestId>.Left(
                 Error.New(new ClientValidationException("Request ID must be a valid GUID.")));
+    }
 
-    public override string ToString() => Value.ToString();
+    public override string ToString()
+    {
+        return Value.ToString();
+    }
 }

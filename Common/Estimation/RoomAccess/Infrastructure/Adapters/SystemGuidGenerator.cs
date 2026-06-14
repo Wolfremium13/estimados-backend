@@ -4,5 +4,8 @@ namespace Common.Estimation.RoomAccess.Infrastructure.Adapters;
 
 public class SystemGuidGenerator : IGuidGenerator
 {
-    public Guid NewGuid() => Guid.NewGuid();
+    public Guid NewGuid()
+    {
+        return Guid.NewGuid();
+    }
 }

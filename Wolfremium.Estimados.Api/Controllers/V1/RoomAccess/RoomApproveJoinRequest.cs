@@ -28,8 +28,9 @@ public class RoomApproveJoinRequest(
     public async Task<IResult> Approve(
         [FromRoute] Guid roomId,
         [FromRoute] Guid requestId
-    ) =>
-        await (
+    )
+    {
+        return await (
             from _ in approveJoinRequestUseCase.Execute(new ApproveJoinRequestCommand(roomId, requestId)).ToAsync()
             from __ in NotifyApplicantApproved(roomId, requestId).ToAsync()
             select Unit.Default
@@ -37,6 +38,7 @@ public class RoomApproveJoinRequest(
             success => Results.Ok(),
             error => Results.Problem(MapToProblemDetails(error, HttpContext))
         );
+    }
 
     private async Task<Either<Error, Unit>> NotifyApplicantApproved(Guid roomId, Guid requestId)
     {
@@ -45,11 +47,9 @@ public class RoomApproveJoinRequest(
             var groupName = $"room_{roomId}";
 
             if (logger.IsEnabled(LogLevel.Information))
-            {
                 logger.LogInformation(
                     "Web API: Sending notification OnJoinRequestApproved to room {RoomId} for request {RequestId}.",
                     roomId, requestId);
-            }
 
             await hubContext.Clients.Group(groupName).SendAsync("OnJoinRequestApproved", requestId);
             return Unit.Default;

@@ -16,7 +16,10 @@ public record ParticipantRole
             Moderador, Developer, ProductOwner
         };
 
-    private ParticipantRole(string value) => Value = value;
+    private ParticipantRole(string value)
+    {
+        Value = value;
+    }
 
     public string Value { get; }
 
@@ -25,17 +28,13 @@ public record ParticipantRole
     public static Either<Error, ParticipantRole> Create(string? value)
     {
         if (string.IsNullOrWhiteSpace(value))
-        {
             return Either<Error, ParticipantRole>.Left(
                 Error.New(new ClientValidationException("Role is required and cannot be empty.")));
-        }
 
         var trimmedValue = value.Trim();
         if (!ValidRoles.Contains(trimmedValue))
-        {
             return Either<Error, ParticipantRole>.Left(Error.New(
                 new InvalidRoleException($"Role must be one of: {Moderador}, {Developer}, {ProductOwner}.")));
-        }
 
         var normalized = string.Equals(trimmedValue, Moderador, StringComparison.OrdinalIgnoreCase) ? Moderador :
             string.Equals(trimmedValue, Developer, StringComparison.OrdinalIgnoreCase) ? Developer : ProductOwner;
@@ -43,5 +42,8 @@ public record ParticipantRole
         return Either<Error, ParticipantRole>.Right(new ParticipantRole(normalized));
     }
 
-    public override string ToString() => Value;
+    public override string ToString()
+    {
+        return Value;
+    }
 }
