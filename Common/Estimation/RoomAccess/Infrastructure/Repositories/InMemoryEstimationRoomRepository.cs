@@ -39,18 +39,21 @@ public class InMemoryEstimationRoomRepository(
         var isNew = !Rooms.ContainsKey(room.Id.Value);
         Rooms[room.Id.Value] = room;
         
-        var participantNames = string.Join(", ", room.ActiveParticipants.Select(p => $"{p.Name.Value} ({p.Role.Value})"));
-        var pendingRequests = string.Join(", ", room.JoinRequests.Where(r => r.Status == JoinRequestStatus.Pending).Select(r => r.Id.Value.ToString()));
-        
-        if (isNew)
+        if (logger.IsEnabled(LogLevel.Information))
         {
-            logger.LogInformation("In-memory repository: Created room {RoomId} with moderator {ModeratorName}.", 
-                room.Id.Value, room.ModeratorName.Value);
-        }
-        else
-        {
-            logger.LogInformation("In-memory repository: Updated room {RoomId}. Active: {IsActive}, Active Participants: [{Participants}], Pending Requests: [{PendingRequests}].", 
-                room.Id.Value, room.IsActive, participantNames, pendingRequests);
+            if (isNew)
+            {
+                logger.LogInformation("In-memory repository: Created room {RoomId} with moderator {ModeratorName}.", 
+                    room.Id.Value, room.ModeratorName.Value);
+            }
+            else
+            {
+                var participantNames = string.Join(", ", room.ActiveParticipants.Select(p => $"{p.Name.Value} ({p.Role.Value})"));
+                var pendingRequests = string.Join(", ", room.JoinRequests.Where(r => r.Status == JoinRequestStatus.Pending).Select(r => r.Id.Value.ToString()));
+                
+                logger.LogInformation("In-memory repository: Updated room {RoomId}. Active: {IsActive}, Active Participants: [{Participants}], Pending Requests: [{PendingRequests}].", 
+                    room.Id.Value, room.IsActive, participantNames, pendingRequests);
+            }
         }
         
         return Task.FromResult<Either<Error, Unit>>(Unit.Default);
