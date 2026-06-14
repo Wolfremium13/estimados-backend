@@ -1,70 +1,70 @@
-# es-timados - Sistema de Estimación Ágil
+# es-timados - Agile Estimation System
 
-`es-timados` es una plataforma web y API para la estimación de esfuerzo en proyectos de desarrollo de software. Este sistema optimiza el proceso clásico de estimación reduciendo la carga cognitiva de los equipos mediante una escala de puntos delimitada y cartas de acción especializadas para evitar discusiones bizantinas y promover backlogs granulares.
-
----
-
-## Documentación de Contexto y Reglas
-El funcionamiento detallado del sistema, los roles y las cartas especiales se describen en la guía de [Reglas y Contexto del Juego](file:///home/wolfremium/RiderProjects/Wolfremium.Estimados/docs/es-timados-context.md).
+`es-timados` is a web platform and API for effort estimation in software development projects. This system optimizes the classic estimation process by reducing the cognitive load of teams through a delimited story point scale and specialized action cards to prevent endless debates and promote granular backlogs.
 
 ---
 
-## Escenarios de Comportamiento (BDD)
+## Rules and Context Documentation
+The detailed operation of the system, roles, and special cards are described in the [Rules and Context of the Game](file:///home/wolfremium/RiderProjects/Wolfremium.Estimados/docs/es-timados-context.md) guide.
 
-El acceso y control de salas de estimación se rige por los siguientes escenarios formales escritos en lenguaje **Gherkin (Given-When-Then)**. Todos estos escenarios se encuentran implementados y validados mediante pruebas integrales de extremo a extremo (E2E) dentro del proyecto de pruebas.
+---
 
-### **Feature:** Acceso a las salas de estimación en "es-timados"
-**Como** usuario del equipo (Moderador, Product Owner o Developer)  
-**Quiero** identificarme y seleccionar mi rol al entrar a la web  
-**Para** poder crear una sala nueva o unirme a una existente de forma segura.
+## Behavior-Driven Development (BDD) Scenarios
 
-#### **Escenarios Principales (Happy Paths)**
+Access to and control of estimation rooms is governed by the following formal scenarios written in **Gherkin (Given-When-Then)** language. All of these scenarios are implemented and validated using end-to-end (E2E) integration tests within the test project.
 
-*   **Escenario 1: Un Moderador entra a la web y crea una sala nueva**
-    *   **Dado** que un usuario accede a la web de "es-timados"
-    *   **Cuando** introduce su nombre como "Carlos"
-    *   **Y** selecciona el rol de "Moderador"
-    *   **Entonces** el sistema crea una nueva sala con un UUID único
-    *   **Y** el usuario entra directamente a la sala como Moderador.
+### **Feature:** Access to estimation rooms in "es-timados"
+**As** a team user (Moderator, Product Owner, or Developer)  
+**I want** to identify myself and select my role when entering the website  
+**So that** I can create a new room or join an existing one securely.
 
-*   **Escenario 2: Un Developer o PO se une a una sala y es aprobado por el Moderador**
-    *   **Dado** que un usuario accede a la web de "es-timados"
-    *   **Cuando** introduce su nombre como "Ana"
-    *   **Y** selecciona el rol de "Developer" (o "Product Owner")
-    *   **Y** proporciona el UUID de una sala activa
-    *   **Y** el Moderador de esa sala aprueba la solicitud de entrada
-    *   **Entonces** el usuario ingresa a la sala de espera.
+#### **Happy Paths**
 
-#### **Casos Extremos (Edge Cases)**
+*   **Scenario 1: A Moderator enters the website and creates a new room**
+    *   **Given** that a user accesses the "es-timados" website
+    *   **When** they enter their name as "Carlos"
+    *   **And** they select the role "Moderator"
+    *   **Then** the system creates a new room with a unique UUID
+    *   **And** the user enters the room directly as Moderator.
 
-*   **Escenario 3: El usuario ya tiene un nombre guardado y decide cambiarlo**
-    *   **Dado** que un usuario accede a la web y el sistema detecta que ya tiene el nombre "Ana" guardado en sesión
-    *   **Cuando** el usuario indica que desea cambiar su nombre
-    *   **Y** actualiza su nombre a "Ana Developer"
-    *   **Y** selecciona el rol de "Developer" e introduce un UUID válido
-    *   **Entonces** la solicitud de entrada enviada al Moderador debe mostrar el nombre actualizado "Ana Developer".
+*   **Scenario 2: A Developer or PO joins a room and is approved by the Moderator**
+    *   **Given** that a user accesses the "es-timados" website
+    *   **When** they enter their name as "Ana"
+    *   **And** they select the role "Developer" (or "Product Owner")
+    *   **And** they provide the UUID of an active room
+    *   **And** the Moderator of that room approves the join request
+    *   **Then** the user enters the waiting room.
 
-*   **Escenario 4: El Developer introduce un UUID inválido o de una sala inactiva**
-    *   **Dado** que un usuario accede a la web y selecciona el rol de "Developer"
-    *   **Cuando** proporciona un código UUID que no existe o corresponde a una sala cerrada
-    *   **Entonces** el sistema debe mostrar un mensaje de error indicando que la sala no existe
-    *   **Y** el usuario debe permanecer en la pantalla de ingreso.
+#### **Edge Cases**
 
-*   **Escenario 5: El Moderador rechaza la solicitud de acceso**
-    *   **Dado** que un usuario con el rol de "Product Owner" ha solicitado entrar a una sala mediante un UUID válido
-    *   **Cuando** el Moderador desde dentro de la sala rechaza la solicitud de entrada
-    *   **Entonces** el usuario recibe una notificación de "Acceso denegado"
-    *   **Y** el usuario no ingresa a la sala de espera.
+*   **Scenario 3: The user already has a saved name and decides to change it**
+    *   **Given** that a user accesses the website and the system detects that they already have the name "Ana" saved in session
+    *   **When** the user indicates they want to change their name
+    *   **And** updates their name to "Ana Developer"
+    *   **And** selects the role "Developer" and enters a valid UUID
+    *   **Then** the join request sent to the Moderator must display the updated name "Ana Developer".
 
-*   **Escenario 6: Intentar avanzar sin completar los campos obligatorios**
-    *   **Dado** que un usuario accede a la web de "es-timados"
-    *   **Cuando** intenta acceder a una sala dejando el nombre o el rol en blanco
-    *   **Entonces** el sistema debe impedir el avance
-    *   **Y** debe mostrar mensajes de validación indicando que el nombre y el rol son obligatorios.
+*   **Scenario 4: The Developer enters an invalid UUID or an inactive room UUID**
+    *   **Given** that a user accesses the website and selects the role "Developer"
+    *   **When** they provide a UUID code that does not exist or corresponds to a closed room
+    *   **Then** the system must display an error message indicating that the room does not exist
+    *   **And** the user must remain on the entry screen.
 
-*   **Escenario 7: El Moderador se desconecta antes de aprobar al usuario**
-    *   **Dado** que un "Developer" ha solicitado entrar a una sala con un UUID válido
-    *   **Y** está esperando la aprobación del Moderador
-    *   **Cuando** el Moderador pierde la conexión o cierra la sala antes de responder
-    *   **Entonces** el "Developer" debe recibir un mensaje de "Sala finalizada o Moderador desconectado"
-    *   **Y** su solicitud de acceso debe ser cancelada.
+*   **Scenario 5: The Moderator rejects the join request**
+    *   **Given** that a user with the role "Product Owner" has requested to join a room using a valid UUID
+    *   **When** the Moderator inside the room rejects the join request
+    *   **Then** the user receives an "Access denied" notification
+    *   **And** the user does not enter the waiting room.
+
+*   **Scenario 6: Attempting to proceed without completing mandatory fields**
+    *   **Given** that a user accesses the "es-timados" website
+    *   **When** they attempt to access a room leaving the name or role blank
+    *   **Then** the system must prevent them from proceeding
+    *   **And** must display validation messages indicating that the name and role are mandatory.
+
+*   **Scenario 7: The Moderator disconnects before approving the user**
+    *   **Given** that a "Developer" has requested to join a room with a valid UUID
+    *   **And** is waiting for the Moderator's approval
+    *   **When** the Moderator loses connection or closes the room before responding
+    *   **Then** the "Developer" must receive a "Room closed or Moderator disconnected" message
+    *   **And** their join request must be cancelled.
