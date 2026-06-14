@@ -1,0 +1,6 @@
+@Wolfremium.Estimados_HostAddress = http://localhost:5011
+
+GET {{Wolfremium.Estimados_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
