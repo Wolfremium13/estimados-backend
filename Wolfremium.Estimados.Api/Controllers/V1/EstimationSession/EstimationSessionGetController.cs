@@ -1,6 +1,7 @@
 using Common.Estimation.EstimationSession.Application.Contracts;
 using Microsoft.AspNetCore.Mvc;
 using static Wolfremium.Estimados.Controllers.EstimationSessionErrorsWeb;
+using static Common.Estimation.EstimationSession.Domain.Errors.EstimationSessionErrors;
 
 namespace Wolfremium.Estimados.Controllers.V1.EstimationSession;
 
@@ -22,7 +23,9 @@ public class EstimationSessionGetController(IGetEstimationSessionUseCase useCase
             select dto
         ).Match<IResult>(
             success => Results.Ok(success),
-            error => Results.Problem(MapToProblemDetails(error, HttpContext))
+            error => error.Exception.Case is SessionNotFoundException
+                ? Results.NoContent()
+                : Results.Problem(MapToProblemDetails(error, HttpContext))
         );
     }
 }

@@ -1,0 +1,234 @@
+﻿@page "/"
+@using System.Web
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>es-timados - Agile Estimation</PageTitle>
+
+<div class="row justify-content-center" style="margin-top: 2rem;">
+    <div class="col-md-10 text-center" style="margin-bottom: 3rem;">
+        <h1 style="font-size: 3rem; background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; margin-bottom: 1rem;">
+            Relative Effort, Simplified.
+        </h1>
+        <p style="color: var(--text-gray-light); font-size: 1.2rem; max-width: 600px; margin: 0 auto;">
+            Collaborative real-time estimation for agile teams. Streamline consensus, avoid authority bias, and split
+            complex requirements instantly.
+        </p>
+    </div>
+</div>
+
+<div class="row justify-content-center g-4">
+    <!-- Create Room Card -->
+    <div class="col-md-5">
+        <div class="glow-card h-100 d-flex flex-column justify-content-between">
+            <div>
+                <h3 style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
+                    <span style="color: #21d789;">✦</span> Start New Session
+                </h3>
+                <p style="color: var(--text-gray-muted); font-size: 0.9rem; margin-bottom: 2rem;">
+                    Create a new estimation room. You will enter as the Moderator with control over session stages and
+                    reveal states.
+                </p>
+
+                <div class="form-group">
+                    <label class="form-label" for="modName">Your Name</label>
+                    <input type="text" id="modName" class="form-control" placeholder="e.g. Carlos"
+                           @bind="moderatorName"/>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(errorMessageCreate))
+            {
+                <div style="color: #ef4444; font-size: 0.85rem; margin-bottom: 1rem;">
+                    ⚠️ @errorMessageCreate
+                </div>
+            }
+
+            <button class="btn-premium w-100" style="margin-top: 1.5rem;" @onclick="CreateRoom" disabled="@isCreating">
+                @if (isCreating)
+                {
+                    <span>Creating Room...</span>
+                }
+                else
+                {
+                    <span>Create Room</span>
+                }
+            </button>
+        </div>
+    </div>
+
+    <!-- Join Room Card -->
+    <div class="col-md-5">
+        <div class="glow-card h-100 d-flex flex-column justify-content-between">
+            <div>
+                <h3 style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
+                    <span style="color: #7f52ff;">◈</span> Join Active Session
+                </h3>
+                <p style="color: var(--text-gray-muted); font-size: 0.9rem; margin-bottom: 2rem;">
+                    Enter a room using a unique code provided by your Moderator. Select your role as a Developer (to
+                    vote) or Product Owner.
+                </p>
+
+                <div class="form-group">
+                    <label class="form-label" for="participantName">Your Name</label>
+                    <input type="text" id="participantName" class="form-control" placeholder="e.g. Ana"
+                           @bind="participantName"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="participantRole">Role</label>
+                    <select id="participantRole" class="form-select" @bind="participantRole">
+                        <option value="Developer">Developer (Voter)</option>
+                        <option value="Product Owner">Product Owner (Observer)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="roomCode">Room Code (UUID)</label>
+                    <input type="text" id="roomCode" class="form-control"
+                           placeholder="00000000-0000-0000-0000-000000000000" @bind="roomCode"/>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(errorMessageJoin))
+            {
+                <div style="color: #ef4444; font-size: 0.85rem; margin-bottom: 1rem;">
+                    ⚠️ @errorMessageJoin
+                </div>
+            }
+
+            <button class="btn-outline-premium w-100" style="margin-top: 1.5rem; background: rgba(255,255,255,0.02);"
+                    @onclick="JoinRoom" disabled="@isJoining">
+                @if (isJoining)
+                {
+                    <span>Sending Join Request...</span>
+                }
+                else
+                {
+                    <span>Join Room</span>
+                }
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string moderatorName = string.Empty;
+    private bool isCreating = false;
+    private string errorMessageCreate = string.Empty;
+
+    private string participantName = string.Empty;
+    private string participantRole = "Developer";
+    private string roomCode = string.Empty;
+    private bool isJoining = false;
+    private string errorMessageJoin = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        var query = HttpUtility.ParseQueryString(uri.Query);
+        var code = query["roomCode"];
+        if (!string.IsNullOrEmpty(code))
+        {
+            roomCode = code;
+        }
+    }
+
+    private async Task CreateRoom()
+    {
+        if (string.IsNullOrWhiteSpace(moderatorName))
+        {
+            errorMessageCreate = "Name is required.";
+            return;
+        }
+
+        errorMessageCreate = string.Empty;
+        isCreating = true;
+
+        try
+        {
+            var response = await Http.PostAsync($"v1/rooms?moderatorName={Uri.EscapeDataString(moderatorName)}", null);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<RoomCreateResult>();
+                if (result != null)
+                {
+                    // Redirect to room dashboard
+                    Navigation.NavigateTo($"/room/{result.RoomId}?name={Uri.EscapeDataString(moderatorName)}&role=Moderator");
+                }
+            }
+            else
+            {
+                errorMessageCreate = "Failed to create room. Please verify details.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessageCreate = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            isCreating = false;
+        }
+    }
+
+    private async Task JoinRoom()
+    {
+        if (string.IsNullOrWhiteSpace(participantName))
+        {
+            errorMessageJoin = "Name is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(roomCode) || !Guid.TryParse(roomCode, out var roomId))
+        {
+            errorMessageJoin = "Valid Room Code (UUID) is required.";
+            return;
+        }
+
+        errorMessageJoin = string.Empty;
+        isJoining = true;
+
+        try
+        {
+            var payload = new { name = participantName, role = participantRole };
+            var response = await Http.PostAsJsonAsync($"v1/rooms/{roomId}/join-requests", payload);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<JoinRequestResult>();
+                if (result != null)
+                {
+                    // Redirect to room dashboard with request details
+                    Navigation.NavigateTo($"/room/{roomId}?name={Uri.EscapeDataString(participantName)}&role={participantRole}&requestId={result.RequestId}");
+                }
+            }
+            else
+            {
+                errorMessageJoin = "Failed to join. The room might be closed or does not exist.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessageJoin = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            isJoining = false;
+        }
+    }
+
+    public class RoomCreateResult
+    {
+        public Guid RoomId { get; set; }
+        public string ModeratorName { get; set; } = string.Empty;
+    }
+
+    public class JoinRequestResult
+    {
+        public Guid RequestId { get; set; }
+        public Guid RoomId { get; set; }
+        public string ParticipantName { get; set; } = string.Empty;
+        public string ParticipantRole { get; set; } = string.Empty;
+    }
+
+}

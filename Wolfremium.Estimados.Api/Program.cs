@@ -11,12 +11,25 @@ builder.Services.AddSignalR();
 builder.Services.AddRoomAccessServices();
 builder.Services.AddEstimationSessionServices();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("WebAppPolicy", policy =>
+    {
+        policy.WithOrigins("http://localhost:5075", "https://localhost:7211")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment()) app.MapOpenApi();
 
 app.UseHttpsRedirection();
+
+app.UseCors("WebAppPolicy");
 
 app.MapControllers();
 app.MapHub<RoomHub>("/hubs/room");
