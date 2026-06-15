@@ -1,7 +1,61 @@
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
 bin/
 obj/
+x64/
+x86/
+build/
+[Oo]ut/
+[Ll]og/
+[Ll]ogs/
+
+# Packages
 /packages/
+*.nuget.props
+*.nuget.targets
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.env
+*.userprefs
+mono_crash.*
+
+# IDE / Editor-specific files
+.vs/
+.idea/
+.vscode/
 riderModule.iml
 /_ReSharper.Caches/
-.idea
-.agents
+/_ReSharper*/
+*.DotSettings.user
+*.suo
+*.ntvs*
+*.njsproj
+*.sln.docstates
+
+# Test results
+[Tt]est[Rr]esult*/
+*.trx
+nunit-*.xml
+TestResult.xml
+
+# Code Coverage
+*.coverage
+*.coveragexml
+coverage*.json
+coverage*.xml
+coverage*.info
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Agent custom files
+.agents/
