@@ -1,3 +1,4 @@
+using Common.Estimation.EstimationSession.Infrastructure.Settings;
 using Common.Estimation.RoomAccess.Infrastructure.Settings;
 using Wolfremium.Estimados.Hubs;
 
@@ -8,6 +9,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 builder.Services.AddSignalR();
 builder.Services.AddRoomAccessServices();
+builder.Services.AddEstimationSessionServices();
 
 var app = builder.Build();
 

@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Common.Estimation.EstimationSession.Application.Contracts;
 using Common.Estimation.RoomAccess.Application.Contracts;
 using Microsoft.AspNetCore.SignalR;
 
@@ -6,6 +7,9 @@ namespace Wolfremium.Estimados.Hubs;
 
 public class RoomHub(
     IDisconnectModeratorUseCase disconnectModeratorUseCase,
+    ICastVoteUseCase castVoteUseCase,
+    IRevealVotesUseCase revealVotesUseCase,
+    IResetVotesUseCase resetVotesUseCase,
     ILogger<RoomHub> logger
 ) : Hub
 {
@@ -32,6 +36,44 @@ public class RoomHub(
         if (logger.IsEnabled(LogLevel.Information))
             logger.LogInformation("SignalR Hub: Connection {ConnectionId} joined room {RoomId} as Participant.",
                 Context.ConnectionId, roomId);
+    }
+
+    public async Task CastVote(Guid roomId, string participantName, string cardValue)
+    {
+        var result = await castVoteUseCase.Execute(new CastVoteCommand(roomId, participantName, cardValue));
+        await result.Match(
+            async success => { await Clients.Group($"room_{roomId}").SendAsync("OnVoteCast", participantName); },
+            error => { throw new HubException(error.Message); }
+        );
+    }
+
+    public async Task RevealVotes(Guid roomId)
+    {
+        var result = await revealVotesUseCase.Execute(new RevealVotesCommand(roomId));
+        await result.Match(
+            async dto =>
+            {
+                if (dto.CurrentState == "Halted")
+                {
+                    await Clients.Group($"room_{roomId}")
+                        .SendAsync("OnSessionHalted", "The story is too complex and must be split.");
+                }
+                else
+                {
+                    await Clients.Group($"room_{roomId}").SendAsync("OnVotesRevealed", dto);
+                }
+            },
+            error => { throw new HubException(error.Message); }
+        );
+    }
+
+    public async Task RestartEstimation(Guid roomId)
+    {
+        var result = await resetVotesUseCase.Execute(new ResetVotesCommand(roomId));
+        await result.Match(
+            async success => { await Clients.Group($"room_{roomId}").SendAsync("OnVotesRestarted"); },
+            error => { throw new HubException(error.Message); }
+        );
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)

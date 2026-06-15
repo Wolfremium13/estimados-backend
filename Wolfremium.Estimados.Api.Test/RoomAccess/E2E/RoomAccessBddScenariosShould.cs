@@ -10,6 +10,7 @@ using Xunit;
 
 namespace Wolfremium.Estimados.Api.Test.RoomAccess.E2E;
 
+[Collection("ScenarioTests")]
 public class RoomAccessBddScenariosShould : IClassFixture<WebApplicationFactory<Program>>, IDisposable
 {
     private readonly WebApplicationFactory<Program> _factory;
