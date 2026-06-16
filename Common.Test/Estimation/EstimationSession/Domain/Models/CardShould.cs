@@ -13,10 +13,10 @@ public class CardShould
     [InlineData("3", true)]
     [InlineData("5", true)]
     [InlineData("8", true)]
-    [InlineData("Hacha", false)]
-    [InlineData("Diagrama", false)]
-    [InlineData("IA", false)]
-    [InlineData("Taza de Café", false)]
+    [InlineData("Axe", false)]
+    [InlineData("Diagram", false)]
+    [InlineData("AI", false)]
+    [InlineData("Coffee Cup", false)]
     public void BeCreatedForValidValues(string value, bool isNumeric)
     {
         var result = Card.Create(value);
@@ -40,10 +40,14 @@ public class CardShould
     }
 
     [Theory]
-    [InlineData("hacha", "Hacha")]
-    [InlineData("diagrama", "Diagrama")]
-    [InlineData("ia", "IA")]
-    [InlineData("TAZA DE CAFÉ", "Taza de Café")]
+    [InlineData("hacha", "Axe")]
+    [InlineData("diagrama", "Diagram")]
+    [InlineData("ia", "AI")]
+    [InlineData("TAZA DE CAFÉ", "Coffee Cup")]
+    [InlineData("axe", "Axe")]
+    [InlineData("diagram", "Diagram")]
+    [InlineData("ai", "AI")]
+    [InlineData("coffee cup", "Coffee Cup")]
     public void BeCaseInsensitiveAndNormalize(string input, string expectedNormalized)
     {
         var result = Card.Create(input);
@@ -57,12 +61,13 @@ public class CardShould
     [InlineData("taza de cafe")]
     [InlineData("Cafe")]
     [InlineData("Café")]
+    [InlineData("coffee")]
     public void NormalizeCoffeeCupWithoutAccent(string input)
     {
         var result = Card.Create(input);
 
         result.IsRight.ShouldBeTrue();
-        result.IfRight(card => card.Value.ShouldBe("Taza de Café"));
+        result.IfRight(card => card.Value.ShouldBe("Coffee Cup"));
     }
 
     [Fact]
@@ -77,14 +82,14 @@ public class CardShould
     [Fact]
     public void IdentifyPropertiesCorrectly()
     {
-        var hacha = Card.Create("Hacha").Match(c => c, _ => throw new Exception());
-        var diagrama = Card.Create("Diagrama").Match(c => c, _ => throw new Exception());
-        var ia = Card.Create("IA").Match(c => c, _ => throw new Exception());
-        var cafe = Card.Create("Taza de Café").Match(c => c, _ => throw new Exception());
+        var axe = Card.Create("Axe").Match(c => c, _ => throw new Exception());
+        var diagram = Card.Create("Diagram").Match(c => c, _ => throw new Exception());
+        var ai = Card.Create("AI").Match(c => c, _ => throw new Exception());
+        var coffee = Card.Create("Coffee Cup").Match(c => c, _ => throw new Exception());
 
-        hacha.IsHacha.ShouldBeTrue();
-        diagrama.IsDiagrama.ShouldBeTrue();
-        ia.IsIA.ShouldBeTrue();
-        cafe.IsTazaDeCafe.ShouldBeTrue();
+        axe.IsAxe.ShouldBeTrue();
+        diagram.IsDiagram.ShouldBeTrue();
+        ai.IsAI.ShouldBeTrue();
+        coffee.IsCoffeeCup.ShouldBeTrue();
     }
 }

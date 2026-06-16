@@ -222,14 +222,14 @@ public class EstimationSessionShould
         var session = new EstimationSessionBuilder()
             .WithState(SessionState.PrivateEstimation)
             .WithVote("Carlos", ParticipantRole.Developer, "5")
-            .WithVote("Ana", ParticipantRole.Developer, "Hacha")
+            .WithVote("Ana", ParticipantRole.Developer, "Axe")
             .Build();
 
         var result = session.RevealVotes();
 
         result.IsRight.ShouldBeTrue();
         session.CurrentState.ShouldBe(SessionState.Halted);
-        session.FlaggedSpecialCards.ShouldContain(c => c.Value == "Hacha");
+        session.FlaggedSpecialCards.ShouldContain(c => c.Value == "Axe");
         session.ConsensusValue.IsNone.ShouldBeTrue();
         session.HasDiscrepancy.ShouldBeFalse();
     }
@@ -240,18 +240,18 @@ public class EstimationSessionShould
         var session = new EstimationSessionBuilder()
             .WithState(SessionState.PrivateEstimation)
             .WithVote("Carlos", ParticipantRole.Developer, "5")
-            .WithVote("Ana", ParticipantRole.Developer, "Diagrama")
-            .WithVote("Bob", ParticipantRole.Developer, "IA")
-            .WithVote("Clara", ParticipantRole.Developer, "Taza de Café")
+            .WithVote("Ana", ParticipantRole.Developer, "Diagram")
+            .WithVote("Bob", ParticipantRole.Developer, "AI")
+            .WithVote("Clara", ParticipantRole.Developer, "Coffee Cup")
             .Build();
 
         var result = session.RevealVotes();
 
         result.IsRight.ShouldBeTrue();
         session.CurrentState.ShouldBe(SessionState.SimultaneousReveal);
-        session.FlaggedSpecialCards.ShouldContain(c => c.Value == "Diagrama");
-        session.FlaggedSpecialCards.ShouldContain(c => c.Value == "IA");
-        session.FlaggedSpecialCards.ShouldContain(c => c.Value == "Taza de Café");
+        session.FlaggedSpecialCards.ShouldContain(c => c.Value == "Diagram");
+        session.FlaggedSpecialCards.ShouldContain(c => c.Value == "AI");
+        session.FlaggedSpecialCards.ShouldContain(c => c.Value == "Coffee Cup");
     }
 
     [Fact]
@@ -313,7 +313,7 @@ public class EstimationSessionShould
         var session = new EstimationSessionBuilder()
             .WithState(SessionState.PrivateEstimation)
             .WithVote("Carlos", ParticipantRole.Developer, "5")
-            .WithVote("Ana", ParticipantRole.Developer, "Hacha")
+            .WithVote("Ana", ParticipantRole.Developer, "Axe")
             .Build();
 
         session.RevealVotes();

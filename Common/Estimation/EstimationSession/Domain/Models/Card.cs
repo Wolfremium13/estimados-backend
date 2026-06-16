@@ -11,15 +11,15 @@ public record Card
     private const string Three = "3";
     private const string Five = "5";
     private const string Eight = "8";
-    public const string Hacha = "Hacha";
-    private const string Diagrama = "Diagrama";
-    private const string IA = "IA";
-    private const string TazaDeCafe = "Taza de Café";
+    public const string Axe = "Axe";
+    private const string Diagram = "Diagram";
+    private const string AI = "AI";
+    private const string CoffeeCup = "Coffee Cup";
 
     private static readonly System.Collections.Generic.HashSet<string> ValidCards =
         new(StringComparer.OrdinalIgnoreCase)
         {
-            One, Two, Three, Five, Eight, Hacha, Diagrama, IA, TazaDeCafe
+            One, Two, Three, Five, Eight, Axe, Diagram, AI, CoffeeCup
         };
 
     private Card(string value)
@@ -31,10 +31,10 @@ public record Card
 
     public bool IsNumeric => Value is One or Two or Three or Five or Eight;
     public bool IsSpecial => !IsNumeric;
-    public bool IsHacha => Value == Hacha;
-    public bool IsDiagrama => Value == Diagrama;
-    public bool IsIA => Value == IA;
-    public bool IsTazaDeCafe => Value == TazaDeCafe;
+    public bool IsAxe => Value == Axe;
+    public bool IsDiagram => Value == Diagram;
+    public bool IsAI => Value == AI;
+    public bool IsCoffeeCup => Value == CoffeeCup;
 
     public static Either<Error, Card> Create(string? value)
     {
@@ -43,11 +43,32 @@ public record Card
 
         var trimmed = value.Trim();
 
-        if (string.Equals(trimmed, "Taza de Cafe", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(trimmed, "Café", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(trimmed, "Cafe", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(trimmed, "Hacha", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(trimmed, "Axe", StringComparison.OrdinalIgnoreCase))
         {
-            return Either<Error, Card>.Right(new Card(TazaDeCafe));
+            return Either<Error, Card>.Right(new Card(Axe));
+        }
+
+        if (string.Equals(trimmed, "Diagrama", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(trimmed, "Diagram", StringComparison.OrdinalIgnoreCase))
+        {
+            return Either<Error, Card>.Right(new Card(Diagram));
+        }
+
+        if (string.Equals(trimmed, "IA", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(trimmed, "AI", StringComparison.OrdinalIgnoreCase))
+        {
+            return Either<Error, Card>.Right(new Card(AI));
+        }
+
+        if (string.Equals(trimmed, "Taza de Café", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(trimmed, "Taza de Cafe", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(trimmed, "Café", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(trimmed, "Cafe", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(trimmed, "Coffee Cup", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(trimmed, "Coffee", StringComparison.OrdinalIgnoreCase))
+        {
+            return Either<Error, Card>.Right(new Card(CoffeeCup));
         }
 
         string? matchedValue = null;

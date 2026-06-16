@@ -193,7 +193,7 @@ else if (connectionState == State.Connected)
                             <h3 style="color: #ef4444; margin-bottom: 0.5rem;">Estimation Halted (Limit of 8
                                 Exceeded)</h3>
                             <p style="color: var(--text-gray-light); max-width: 500px; margin: 0 auto;">
-                                The Hacha (Axe) protocol has been triggered. This story is too complex or ambiguous. It
+                                The Axe protocol has been triggered. This story is too complex or ambiguous. It
                                 must be split into smaller tasks before proceeding.
                             </p>
                         </div>
@@ -239,17 +239,21 @@ else if (connectionState == State.Connected)
                                 @foreach (var sc in currentSession.FlaggedSpecialCards)
                                 {
                                     <span style="background: rgba(127, 82, 255, 0.1); color: #7f52ff; border: 1px solid rgba(127, 82, 255, 0.2); padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">
-                                        @if (sc == "Diagrama")
+                                        @if (sc == "Diagram")
                                         {
                                             <span>🎨 Sketch Architecture (Diagram)</span>
                                         }
-                                        else if (sc == "IA")
+                                        else if (sc == "AI")
                                         {
                                             <span>🤖 Candidates for AI Automation</span>
                                         }
-                                        else if (sc == "Taza de Café")
+                                        else if (sc == "Coffee Cup")
                                         {
                                             <span>☕ Take a coffee break</span>
+                                        }
+                                        else if (sc == "Axe")
+                                        {
+                                            <span>🪓 Axe Protocol (Too complex)</span>
                                         }
                                         else
                                         {
@@ -382,7 +386,7 @@ else if (connectionState == State.Connected)
     private readonly List<DeckCard> deckCards = new()
     {
             new("1", false), new("2", false), new("3", false), new("5", false), new("8", false),
-            new("Hacha", true), new("Diagrama", true), new("IA", true), new("Taza de Café", true)
+            new("Axe", true), new("Diagram", true), new("AI", true), new("Coffee Cup", true)
     };
 
     protected override async Task OnInitializedAsync()

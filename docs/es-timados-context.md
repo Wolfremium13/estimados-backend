@@ -11,17 +11,17 @@ The system uses a simplified numerical scale to represent relative effort:
 $$\text{es-timados Scale: } \{1, 2, 3, 5, 8\}$$
 
 ### The "Limit of 8"
-Any requirement or task that the development team considers to be greater than **8** points is assumed to have an unmanageable level of uncertainty or complexity for an efficient sprint. Instead of debating larger values (such as 13, 20, or 40), estimation for that item is halted, and the **Hacha** (Axe) card protocol is immediately activated.
+Any requirement or task that the development team considers to be greater than **8** points is assumed to have an unmanageable level of uncertainty or complexity for an efficient sprint. Instead of debating larger values (such as 13, 20, or 40), estimation for that item is halted, and the **Axe** card protocol is immediately activated.
 
 ---
 
 ## 3. Special Cards
 The system features a deck of cards with specific purposes to streamline the workflow:
 
-*   **Hacha (Axe)**: An immediate action card. It indicates that the User Story is too complex or ambiguous and must be split into smaller tasks or requirements before proceeding.
-*   **Diagrama (Diagram)**: Indicates that the technical team needs to sketch an architecture, a visual flow diagram, or hold a brief design discussion before assigning an estimation score.
-*   **IA (Artificial Intelligence)**: Used to tag repetitive or mechanical tasks that are candidates to be automated or accelerated significantly using AI assistants and code generators.
-*   **Taza de Café (Coffee Cup)**: Indicates that the team is experiencing mental fatigue and proposes taking a short break of a few minutes to restore focus.
+*   **Axe**: An immediate action card. It indicates that the User Story is too complex or ambiguous and must be split into smaller tasks or requirements before proceeding.
+*   **Diagram**: Indicates that the technical team needs to sketch an architecture, a visual flow diagram, or hold a brief design discussion before assigning an estimation score.
+*   **AI (Artificial Intelligence)**: Used to tag repetitive or mechanical tasks that are candidates to be automated or accelerated significantly using AI assistants and code generators.
+*   **Coffee Cup**: Indicates that the team is experiencing mental fatigue and proposes taking a short break of a few minutes to restore focus.
 
 ---
 
@@ -42,4 +42,4 @@ Estimation sessions follow a structured six-step flow led by the Moderator:
 ## 5. Roles and Responsibilities
 *   **Product Owner**: Defines the scope, clarifies acceptance criteria, and prioritizes requirements. Acts as a functional consultant but has no vote in the estimation of effort.
 *   **Development Team**: Determines the relative technical effort and complexity. Has the exclusive authority to vote and estimate tasks.
-*   **Scrum Master / Moderator**: Facilitates the dynamic, keeps track of discussion times, and ensures the **Hacha** protocol is executed when complex requirements arise.
+*   **Scrum Master / Moderator**: Facilitates the dynamic, keeps track of discussion times, and ensures the **Axe** protocol is executed when complex requirements arise.

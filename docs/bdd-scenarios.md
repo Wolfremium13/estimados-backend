@@ -98,16 +98,16 @@ Access to, control of, and estimation within rooms in `es-timados` are governed 
     *   **Then** the system prevents the Product Owner from voting
     *   **And** displays an error indicating that Product Owners cannot vote.
 
-*   **Scenario 12: A Developer votes with the Hacha (Axe) card [Implemented]**
+*   **Scenario 12: A Developer votes with the Axe card [Implemented]**
     *   **Given** that the room is in the private estimation stage
-    *   **When** any Developer votes with the "Hacha" card
+    *   **When** any Developer votes with the "Axe" card
     *   **And** the Moderator reveals the cards
     *   **Then** the estimation session is halted
     *   **And** the system notifies the team that the story is too complex and must be split.
 
-*   **Scenario 13: Developer votes with other special cards (Diagrama, IA, Taza de Café) [Implemented]**
+*   **Scenario 13: Developer votes with other special cards (Diagram, AI, Coffee Cup) [Implemented]**
     *   **Given** that the room is in the private estimation stage
-    *   **When** a Developer votes with "Diagrama" (or "IA" or "Taza de Café")
+    *   **When** a Developer votes with "Diagram" (or "AI" or "Coffee Cup")
     *   **And** the Moderator reveals the cards
     *   **Then** the system flags the special card and recommends the corresponding action (technical discussion, AI automation tagging, or taking a break).
 

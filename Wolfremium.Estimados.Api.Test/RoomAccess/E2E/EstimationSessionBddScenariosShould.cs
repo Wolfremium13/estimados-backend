@@ -159,7 +159,7 @@ public class EstimationSessionBddScenariosShould : IClassFixture<WebApplicationF
     }
 
     [Fact]
-    public async Task Scenario12_DeveloperVotesWithHachaCard()
+    public async Task Scenario12_DeveloperVotesWithAxeCard()
     {
         var roomId = await SetupRoomWithParticipants();
 
@@ -175,7 +175,7 @@ public class EstimationSessionBddScenariosShould : IClassFixture<WebApplicationF
         await _httpClient.PostAsync($"v1/rooms/{roomId}/session/transition/private-estimation", null);
 
         await _httpClient.PostAsJsonAsync($"v1/rooms/{roomId}/session/vote",
-            new { participantName = "Ana", cardValue = "Hacha" });
+            new { participantName = "Ana", cardValue = "Axe" });
 
         await _httpClient.PostAsync($"v1/rooms/{roomId}/session/reveal", null);
 
@@ -186,7 +186,7 @@ public class EstimationSessionBddScenariosShould : IClassFixture<WebApplicationF
         var sessionDto = await getResponse.Content.ReadFromJsonAsync<EstimationSessionDto>();
         sessionDto.ShouldNotBeNull();
         sessionDto.CurrentState.ShouldBe("Halted");
-        sessionDto.FlaggedSpecialCards.ShouldContain("Hacha");
+        sessionDto.FlaggedSpecialCards.ShouldContain("Axe");
 
         await hubConnection.DisposeAsync();
     }
@@ -201,17 +201,17 @@ public class EstimationSessionBddScenariosShould : IClassFixture<WebApplicationF
         await _httpClient.PostAsync($"v1/rooms/{roomId}/session/transition/private-estimation", null);
 
         await _httpClient.PostAsJsonAsync($"v1/rooms/{roomId}/session/vote",
-            new { participantName = "Ana", cardValue = "Diagrama" });
+            new { participantName = "Ana", cardValue = "Diagram" });
         await _httpClient.PostAsJsonAsync($"v1/rooms/{roomId}/session/vote",
-            new { participantName = "Bob", cardValue = "IA" });
+            new { participantName = "Bob", cardValue = "AI" });
 
         await _httpClient.PostAsync($"v1/rooms/{roomId}/session/reveal", null);
 
         var getResponse = await _httpClient.GetAsync($"v1/rooms/{roomId}/session");
         var sessionDto = await getResponse.Content.ReadFromJsonAsync<EstimationSessionDto>();
         sessionDto.ShouldNotBeNull();
-        sessionDto.FlaggedSpecialCards.ShouldContain("Diagrama");
-        sessionDto.FlaggedSpecialCards.ShouldContain("IA");
+        sessionDto.FlaggedSpecialCards.ShouldContain("Diagram");
+        sessionDto.FlaggedSpecialCards.ShouldContain("AI");
     }
 
     private async Task<Guid> SetupRoomWithParticipants()

@@ -133,10 +133,10 @@ public class EstimationSession
             return;
         }
 
-        if (_votes.Values.Any(c => c.IsHacha))
+        if (_votes.Values.Any(c => c.IsAxe))
         {
             CurrentState = SessionState.Halted;
-            _flaggedSpecialCards.Add(Card.Create(Card.Hacha).Match(c => c, _ => throw new InvalidOperationException()));
+            _flaggedSpecialCards.Add(Card.Create(Card.Axe).Match(c => c, _ => throw new InvalidOperationException()));
             ConsensusValue = Option<Card>.None;
             HasDiscrepancy = false;
             return;
