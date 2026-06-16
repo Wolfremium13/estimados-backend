@@ -1,0 +1,45 @@
+@if (PendingRequests.Any())
+{
+    <div class="glow-card" style="margin-bottom: 2rem; border-color: rgba(127, 82, 255, 0.3);">
+        <h3 style="margin-bottom: 1.25rem; color: #7f52ff; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.05em;">
+            Pending Requests (@PendingRequests.Count)
+        </h3>
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            @foreach (var req in PendingRequests)
+            {
+                <div class="waiting-participant">
+                    <div>
+                        <div style="font-weight: 600; color: var(--text-white);">@req.Name</div>
+                        <div style="font-size: 0.75rem; color: var(--text-gray-muted);">Requested: @req.Role</div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn btn-sm"
+                                style="background: var(--gradient-brand); color: #fff; padding: 2px 12px; font-size: 0.75rem; font-weight: 700; border-radius: 4px;"
+                                @onclick="() => Approve(req.RequestId)">Approve
+                        </button>
+                        <button class="btn btn-sm"
+                                style="background: #ef4444; color: #fff; padding: 2px 8px; font-size: 0.75rem; font-weight: 700; border-radius: 4px;"
+                                @onclick="() => Reject(req.RequestId)">Reject
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public List<PendingRequestModel> PendingRequests { get; set; } = new();
+    [Parameter] public EventCallback<Guid> OnApprove { get; set; }
+    [Parameter] public EventCallback<Guid> OnReject { get; set; }
+
+    private async Task Approve(Guid reqId)
+    {
+        await OnApprove.InvokeAsync(reqId);
+    }
+
+    private async Task Reject(Guid reqId)
+    {
+        await OnReject.InvokeAsync(reqId);
+    }
+}

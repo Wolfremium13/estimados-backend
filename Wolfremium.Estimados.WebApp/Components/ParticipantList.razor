@@ -1,0 +1,78 @@
+<div class="glow-card">
+    <h3 style="font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-gray-muted); margin-bottom: 1.25rem;">
+        Participants
+    </h3>
+
+    @if (RoomParticipants.Any())
+    {
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            @foreach (var participant in RoomParticipants)
+            {
+                <div class="waiting-participant" style="margin-bottom: 0;">
+                    <div>
+                        <div style="font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                            @{
+                                var isOnline = !ParticipantOnlineStatus.TryGetValue(participant.Name, out var online) || online;
+                            }
+                            <span style="width: 8px; height: 8px; border-radius: 50%; background-color: @(isOnline ? "#21d789" : "#ff4d4d"); display: inline-block;"
+                                  title="@(isOnline ? "Online" : "Offline")"></span>
+                            <span style="@(isOnline ? "color: var(--text-white);" : "color: var(--text-gray-muted); text-decoration: line-through;")">@participant.Name</span>
+                            @if (!isOnline)
+                            {
+                                <span style="font-size: 0.75rem; color: #ff4d4d; font-weight: normal; margin-left: 2px;">(Offline)</span>
+                            }
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-gray-muted);">@participant.Role</div>
+                    </div>
+                    <div>
+                        @if (participant.Role == "Developer")
+                        {
+                            @if (CurrentSession != null)
+                            {
+                                var vote = CurrentSession.Votes?.FirstOrDefault(v => string.Equals(v.Name, participant.Name, StringComparison.OrdinalIgnoreCase));
+                                @if (CurrentSession.CurrentState is "SimultaneousReveal" or "ConsensusManagement" or "Halted")
+                                {
+                                    <span style="font-family: var(--font-mono); font-weight: 700; color: #21d789;">
+                                        @(vote?.Card ?? "Idle")
+                                    </span>
+                                }
+                                else
+                                {
+                                    @if (vote != null || VotedParticipants.Contains(participant.Name))
+                                    {
+                                        <span style="color: #21d789;">✓ Voted</span>
+                                    }
+                                    else
+                                    {
+                                        <span style="color: var(--text-gray-muted);">Thinking...</span>
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                <span style="color: var(--text-gray-muted);">Waiting...</span>
+                            }
+                        }
+                        else
+                        {
+                            <span style="color: var(--text-gray-muted); font-style: italic;">Observer</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p style="color: var(--text-gray-muted); font-style: italic; margin: 0; text-align: center;">
+            No participants in the room yet.
+        </p>
+    }
+</div>
+
+@code {
+    [Parameter] public List<ParticipantDto> RoomParticipants { get; set; } = new();
+    [Parameter] public EstimationSessionDto? CurrentSession { get; set; }
+    [Parameter] public Dictionary<string, bool> ParticipantOnlineStatus { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    [Parameter] public HashSet<string> VotedParticipants { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+}

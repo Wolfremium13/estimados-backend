@@ -131,7 +131,7 @@ else if (connectionState == State.Connected)
                             <label class="form-label" for="storyDesc">User Story Description / Title (supports Markdown)</label>
                             <textarea id="storyDesc" class="form-control" rows="5"
                                       placeholder="e.g.&#10;# User Story Title&#10;As a user...&#10;I want to...&#10;So that...&#10;&#10;### Acceptance Criteria&#10;- [ ] Criteria 1&#10;- [ ] Criteria 2"
-                                      @bind="newStoryDescription"
+                                      @bind="newStoryDescription" @bind:event="oninput"
                                       style="resize: vertical; font-family: monospace;"></textarea>
                         </div>
                         <button class="btn-premium" @onclick="StartSession"
@@ -148,8 +148,10 @@ else if (connectionState == State.Connected)
                             }
                             else if (currentSession.CurrentState == "PrivateEstimation")
                             {
+                                var developers = roomParticipants.Where(p => string.Equals(p.Role, "Developer", StringComparison.OrdinalIgnoreCase)).ToList();
+                                var allDevelopersVoted = developers.Any() && developers.All(dev => votedParticipants.Contains(dev.Name));
                                 <button class="btn-premium" @onclick="RevealVotes"
-                                        disabled="@(!votedParticipants.Any())">Reveal Votes
+                                        disabled="@(!allDevelopersVoted)">Reveal Votes
                                 </button>
                             }
                             else if (currentSession.CurrentState is "SimultaneousReveal" or "ConsensusManagement" or "Halted")
@@ -165,164 +167,13 @@ else if (connectionState == State.Connected)
             <!-- Estimation Deck (Only visible to Developers when in PrivateEstimation state) -->
             @if (ParticipantRole == "Developer" && currentSession?.CurrentState == "PrivateEstimation")
             {
-                <div class="glow-card">
-                    <h3 style="margin-bottom: 0.5rem;">Select Your Card</h3>
-                    <p style="color: var(--text-gray-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
-                        Select a card to submit your estimate. The values are updated and shown in real-time.
-                    </p>
-
-                    <div class="card-grid">
-                        @foreach (var card in deckCards)
-                        {
-                            <div class="estimados-card @(card.IsSpecial ? "special-card" : "") @(selectedCard == card.Value ? "active-selected" : "")"
-                                 @onclick="() => CastVote(card.Value)">
-                                @card.Value
-                            </div>
-                        }
-                    </div>
-
-                    <div style="margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
-                        <h4 style="font-size: 1rem; color: var(--text-white); margin-bottom: 1rem; font-weight: 600;">
-                            Card Guide & Meaning
-                        </h4>
-                        <div class="row g-3">
-                            <div class="col-sm-6 col-md-4">
-                                <div class="legend-card" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.75rem 1rem; height: 100%;">
-                                    <div style="font-weight: 700; color: #21d789; margin-bottom: 0.25rem;">1, 2, 3, 5, 8</div>
-                                    <div style="font-size: 0.8rem; color: var(--text-gray-light);">Story Points. Standard scale representing task size and complexity.</div>
-                                </div>
-                            </div>
-                            <div class="col-sm-6 col-md-4">
-                                <div class="legend-card" style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; padding: 0.75rem 1rem; height: 100%;">
-                                    <div style="font-weight: 700; color: #ef4444; margin-bottom: 0.25rem;">🪓 Axe</div>
-                                    <div style="font-size: 0.8rem; color: var(--text-gray-light);">Axe Protocol. Halts voting because the story is too complex or ambiguous.</div>
-                                </div>
-                            </div>
-                            <div class="col-sm-6 col-md-4">
-                                <div class="legend-card" style="background: rgba(127, 82, 255, 0.05); border: 1px solid rgba(127, 82, 255, 0.2); border-radius: 8px; padding: 0.75rem 1rem; height: 100%;">
-                                    <div style="font-weight: 700; color: #7f52ff; margin-bottom: 0.25rem;">📊 Diagram</div>
-                                    <div style="font-size: 0.8rem; color: var(--text-gray-light);">Architecture diagrams, flows, or technical designs are needed.</div>
-                                </div>
-                            </div>
-                            <div class="col-sm-6 col-md-4">
-                                <div class="legend-card" style="background: rgba(33, 215, 137, 0.05); border: 1px solid rgba(33, 215, 137, 0.2); border-radius: 8px; padding: 0.75rem 1rem; height: 100%;">
-                                    <div style="font-weight: 700; color: #21d789; margin-bottom: 0.25rem;">🤖 AI</div>
-                                    <div style="font-size: 0.8rem; color: var(--text-gray-light);">High technical uncertainty; seek AI assistance or prompt generation.</div>
-                                </div>
-                            </div>
-                            <div class="col-sm-6 col-md-4">
-                                <div class="legend-card" style="background: rgba(248, 152, 32, 0.05); border: 1px solid rgba(248, 152, 32, 0.2); border-radius: 8px; padding: 0.75rem 1rem; height: 100%;">
-                                    <div style="font-weight: 700; color: #f89820; margin-bottom: 0.25rem;">☕ Coffee Cup</div>
-                                    <div style="font-size: 0.8rem; color: var(--text-gray-light);">Fatigue or deadlock; take a short team break to rest.</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <EstimationDeck SelectedCard="@selectedCard" OnCardSelected="CastVote" />
             }
 
             <!-- Reveal Session Summary Results -->
             @if (currentSession?.CurrentState is "SimultaneousReveal" or "ConsensusManagement" or "Halted")
             {
-                <div class="glow-card"
-                     style="border-color: @(currentSession.CurrentState == "Halted" ? "#ef4444" : (currentSession.HasDiscrepancy ? "#f89820" : "#21d789"));">
-                    @if (currentSession.CurrentState == "Halted")
-                    {
-                        <div style="text-align: center; padding: 1rem 0;">
-                            <span style="font-size: 3.5rem; display: block; margin-bottom: 1rem;">🪓</span>
-                            <h3 style="color: #ef4444; margin-bottom: 0.5rem;">Estimation Halted (Limit of 8
-                                Exceeded)</h3>
-                            <p style="color: var(--text-gray-light); max-width: 500px; margin: 0 auto; margin-bottom: 1rem;">
-                                The Axe protocol has been triggered. This story is too complex or ambiguous. It
-                                must be split into smaller tasks before proceeding.
-                            </p>
-                            @if (currentSession.Votes != null)
-                            {
-                                var axeLaunchers = currentSession.Votes
-                                    .Where(v => string.Equals(v.Card, "Axe", StringComparison.OrdinalIgnoreCase))
-                                    .Select(v => v.Name)
-                                    .ToList();
-                                @if (axeLaunchers.Any())
-                                {
-                                    <div style="margin-top: 1.5rem; padding: 0.75rem 1.25rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; display: inline-block;">
-                                        <span style="color: #ef4444; font-weight: 600; font-size: 0.95rem;">
-                                            🪓 Triggered by: 
-                                        </span>
-                                        <span style="color: var(--text-white); font-weight: 700; font-size: 0.95rem;">
-                                            @string.Join(", ", axeLaunchers)
-                                        </span>
-                                    </div>
-                                }
-                            }
-                        </div>
-                    }
-                    else if (!currentSession.HasDiscrepancy && currentSession.ConsensusValue != null)
-                    {
-                        <div style="text-align: center; padding: 1rem 0;">
-                            <span style="font-size: 3.5rem; display: block; margin-bottom: 1.5rem; background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800;">
-                                @currentSession.ConsensusValue
-                            </span>
-                            <h3 style="color: #21d789; margin-bottom: 0.5rem;">Consensus Reached!</h3>
-                            <p style="color: var(--text-gray-light);">
-                                The team has agreed on an effort score of
-                                <strong>@currentSession.ConsensusValue</strong> points.
-                            </p>
-                        </div>
-                    }
-                    else
-                    {
-                        <div style="text-align: center; padding: 1rem 0;">
-                            <span style="font-size: 3.5rem; display: block; margin-bottom: 1rem;">⚖️</span>
-                            <h3 style="color: #f89820; margin-bottom: 0.5rem;">Discrepancy Detected</h3>
-                            <p style="color: var(--text-gray-light); max-width: 500px; margin: 0 auto; margin-bottom: 1rem;">
-                                The votes do not match. The lowest and highest voters should explain their technical
-                                reasoning.
-                            </p>
-                            @if (IsModerator)
-                            {
-                                <button class="btn-premium" @onclick="TransitionToConsensus">Move to Consensus
-                                    Management
-                                </button>
-                            }
-                        </div>
-                    }
-
-                    <!-- Flagged Special Cards Recommendation -->
-                    @if (currentSession.FlaggedSpecialCards != null && currentSession.FlaggedSpecialCards.Any())
-                    {
-                        <div style="margin-top: 2rem; border-top: 1px dashed var(--border-color); padding-top: 1.5rem;">
-                            <h4 style="font-size: 1rem; margin-bottom: 0.75rem; text-transform: uppercase; color: var(--text-gray-muted); letter-spacing: 0.05em;">
-                                Flagged Actions:</h4>
-                            <div class="d-flex gap-2 flex-wrap">
-                                @foreach (var sc in currentSession.FlaggedSpecialCards)
-                                {
-                                    <span style="background: rgba(127, 82, 255, 0.1); color: #7f52ff; border: 1px solid rgba(127, 82, 255, 0.2); padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">
-                                        @if (sc == "Diagram")
-                                        {
-                                            <span>🎨 Sketch Architecture (Diagram)</span>
-                                        }
-                                        else if (sc == "AI")
-                                        {
-                                            <span>🤖 Candidates for AI Automation</span>
-                                        }
-                                        else if (sc == "Coffee Cup")
-                                        {
-                                            <span>☕ Take a coffee break</span>
-                                        }
-                                        else if (sc == "Axe")
-                                        {
-                                            <span>🪓 Axe Protocol (Too complex)</span>
-                                        }
-                                        else
-                                        {
-                                            <span>@sc</span>
-                                        }
-                                    </span>
-                                }
-                            </div>
-                        </div>
-                    }
-                </div>
+                <RevealResults CurrentSession="currentSession" IsModerator="@IsModerator" OnTransitionToConsensus="TransitionToConsensus" />
             }
         </div>
 
@@ -331,103 +182,16 @@ else if (connectionState == State.Connected)
             <!-- Join Requests (Only visible to Moderator) -->
             @if (IsModerator && pendingRequests.Any())
             {
-                <div class="glow-card" style="margin-bottom: 2rem; border-color: rgba(127, 82, 255, 0.4);">
-                    <h3 style="font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.05em; color: #7f52ff; margin-bottom: 1.25rem;">
-                        Join Requests (@pendingRequests.Count)
-                    </h3>
-                    @foreach (var req in pendingRequests)
-                    {
-                        <div class="waiting-participant">
-                            <div>
-                                <div style="font-weight: 600;">@req.Name</div>
-                                <div style="font-size: 0.75rem; color: var(--text-gray-muted);">@req.Role</div>
-                            </div>
-                            <div class="d-flex gap-1">
-                                <button class="btn btn-sm"
-                                        style="background: #21d789; color: #000; padding: 2px 8px; font-size: 0.75rem; font-weight: 700; border-radius: 4px;"
-                                        @onclick="() => ApproveRequest(req.RequestId)">Approve
-                                </button>
-                                <button class="btn btn-sm"
-                                        style="background: #ef4444; color: #fff; padding: 2px 8px; font-size: 0.75rem; font-weight: 700; border-radius: 4px;"
-                                        @onclick="() => RejectRequest(req.RequestId)">Reject
-                                </button>
-                            </div>
-                        </div>
-                    }
-                </div>
+                <PendingRequestsList PendingRequests="@pendingRequests"
+                                     OnApprove="ApproveRequest"
+                                     OnReject="RejectRequest" />
             }
 
             <!-- Participants list / Votes state -->
-            <div class="glow-card">
-                <h3 style="font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-gray-muted); margin-bottom: 1.25rem;">
-                    Participants
-                </h3>
-
-                @if (roomParticipants.Any())
-                {
-                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                        @foreach (var participant in roomParticipants)
-                        {
-                            <div class="waiting-participant" style="margin-bottom: 0;">
-                                <div>
-                                    <div style="font-weight: 600; display: flex; align-items: center; gap: 6px;">
-                                        @{
-                                            var isOnline = !participantOnlineStatus.TryGetValue(participant.Name, out var online) || online;
-                                        }
-                                        <span style="width: 8px; height: 8px; border-radius: 50%; background-color: @(isOnline ? "#21d789" : "#ff4d4d"); display: inline-block;"
-                                              title="@(isOnline ? "Online" : "Offline")"></span>
-                                        <span style="@(isOnline ? "color: var(--text-white);" : "color: var(--text-gray-muted); text-decoration: line-through;")">@participant.Name</span>
-                                        @if (!isOnline)
-                                        {
-                                            <span style="font-size: 0.75rem; color: #ff4d4d; font-weight: normal; margin-left: 2px;">(Offline)</span>
-                                        }
-                                    </div>
-                                    <div style="font-size: 0.75rem; color: var(--text-gray-muted);">@participant.Role</div>
-                                </div>
-                                <div>
-                                    @if (participant.Role == "Developer")
-                                    {
-                                        @if (currentSession != null)
-                                        {
-                                            var vote = currentSession.Votes?.FirstOrDefault(v => string.Equals(v.Name, participant.Name, StringComparison.OrdinalIgnoreCase));
-                                            @if (currentSession.CurrentState is "SimultaneousReveal" or "ConsensusManagement" or "Halted")
-                                            {
-                                                <span style="font-family: var(--font-mono); font-weight: 700; color: #21d789;">
-                                                    @(vote?.Card ?? "Idle")
-                                                </span>
-                                            }
-                                            else
-                                            {
-                                                @if (vote != null || votedParticipants.Contains(participant.Name))
-                                                {
-                                                    <span style="color: #21d789;">✓ Voted</span>
-                                                }
-                                                else
-                                                {
-                                                    <span style="color: var(--text-gray-muted);">Thinking...</span>
-                                                }
-                                            }
-                                        }
-                                        else
-                                        {
-                                            <span style="color: var(--text-gray-muted);">Waiting...</span>
-                                        }
-                                    }
-                                    else
-                                    {
-                                        <span style="color: var(--text-gray-muted); font-style: italic;">Observer</span>
-                                    }
-                                </div>
-                            </div>
-                        }
-                    </div>
-                }
-                else
-                {
-                    <p style="color: var(--text-gray-muted); font-size: 0.9rem; text-align: center; padding: 1rem 0;">No
-                        participants have joined yet.</p>
-                }
-            </div>
+            <ParticipantList RoomParticipants="roomParticipants"
+                             CurrentSession="currentSession"
+                             ParticipantOnlineStatus="participantOnlineStatus"
+                             VotedParticipants="votedParticipants" />
         </div>
     </div>
 }
@@ -450,13 +214,7 @@ else if (connectionState == State.Connected)
     private string newStoryDescription = string.Empty;
     private HashSet<string> votedParticipants = new(StringComparer.OrdinalIgnoreCase);
     private Dictionary<string, bool> participantOnlineStatus = new(StringComparer.OrdinalIgnoreCase);
-    private List<PendingRequest> pendingRequests = new();
-
-    private readonly List<DeckCard> deckCards = new()
-    {
-            new("1", false), new("2", false), new("3", false), new("5", false), new("8", false),
-            new("Axe", true), new("Diagram", true), new("AI", true), new("Coffee Cup", true)
-    };
+    private List<PendingRequestModel> pendingRequests = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -509,7 +267,7 @@ else if (connectionState == State.Connected)
         {
             if (IsModerator)
             {
-                pendingRequests.Add(new PendingRequest(reqId, name, role));
+                pendingRequests.Add(new PendingRequestModel(reqId, name, role));
                 StateHasChanged();
             }
         });
@@ -929,24 +687,6 @@ else if (connectionState == State.Connected)
         Disconnected
     }
 
-    private record PendingRequest(Guid RequestId, string Name, string Role);
 
-    private record DeckCard(string Value, bool IsSpecial);
-
-    public record ParticipantDto(string Name, string Role);
-
-    // Matching Client DTO structures
-    public record EstimationSessionDto(
-            Guid SessionId,
-            Guid RoomId,
-            string StoryDescription,
-            string CurrentState,
-            string? ConsensusValue,
-            bool HasDiscrepancy,
-            IReadOnlyCollection<string> FlaggedSpecialCards,
-            IReadOnlyCollection<ParticipantVoteDto> Votes
-    );
-
-    public record ParticipantVoteDto(string Name, string? Card);
 
 }
