@@ -9,30 +9,29 @@ using static Wolfremium.Estimados.Controllers.EstimationSessionErrorsWeb;
 namespace Wolfremium.Estimados.Controllers.V1.EstimationSession;
 
 [ApiController]
-[Route("v1/rooms/{roomId:guid}/session/start")]
+[Route("v1/rooms/{roomId:guid}/session/close")]
 [Tags("Estimation Session")]
-public class EstimationSessionStartController(
-    IStartEstimationSessionUseCase startEstimationSessionUseCase,
+public class EstimationSessionCloseController(
+    ICloseEstimationSessionUseCase closeEstimationSessionUseCase,
     IHubContext<RoomHub> hubContext
 ) : ControllerBase
 {
     [HttpPost]
     [Produces("application/json")]
-    [EndpointSummary("Start an estimation session")]
-    [EndpointDescription("Starts a new estimation session for the specified room with a story description.")]
-    [ProducesResponseType(typeof(EstimationSessionDto), StatusCodes.Status200OK)]
+    [EndpointSummary("Close the estimation session")]
+    [EndpointDescription("Closes and deletes the current estimation session for the room, resetting the state of all participants.")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<IResult> Start([FromRoute] Guid roomId,
-        [FromBody] StartEstimationSessionRequest request)
+    public async Task<IResult> Close([FromRoute] Guid roomId)
     {
         return await (
-            from dto in startEstimationSessionUseCase
-                .Execute(new StartEstimationSessionCommand(roomId, request.StoryDescription)).ToAsync()
-            from _ in NotifySessionUpdated(roomId).ToAsync()
-            select dto
+            from _ in closeEstimationSessionUseCase
+                .Execute(new CloseEstimationSessionCommand(roomId)).ToAsync()
+            from __ in NotifySessionUpdated(roomId).ToAsync()
+            select Unit.Default
         ).Match<IResult>(
-            success => Results.Ok(success),
+            success => Results.Ok(),
             error => Results.Problem(MapToProblemDetails(error, HttpContext))
         );
     }
@@ -50,5 +49,3 @@ public class EstimationSessionStartController(
         }
     }
 }
-
-public record StartEstimationSessionRequest(string StoryDescription);

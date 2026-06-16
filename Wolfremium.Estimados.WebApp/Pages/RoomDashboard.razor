@@ -127,10 +127,12 @@ else if (connectionState == State.Connected)
 
                     @if (currentSession == null)
                     {
-                        <div class="form-group">
-                            <label class="form-label" for="storyDesc">User Story Description / Title</label>
-                            <input type="text" id="storyDesc" class="form-control"
-                                   placeholder="e.g. Implement user login flow" @bind="newStoryDescription"/>
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label class="form-label" for="storyDesc">User Story Description / Title (supports Markdown)</label>
+                            <textarea id="storyDesc" class="form-control" rows="5"
+                                      placeholder="e.g.&#10;# User Story Title&#10;As a user...&#10;I want to...&#10;So that...&#10;&#10;### Acceptance Criteria&#10;- [ ] Criteria 1&#10;- [ ] Criteria 2"
+                                      @bind="newStoryDescription"
+                                      style="resize: vertical; font-family: monospace;"></textarea>
                         </div>
                         <button class="btn-premium" @onclick="StartSession"
                                 disabled="@string.IsNullOrWhiteSpace(newStoryDescription)">
@@ -312,7 +314,18 @@ else if (connectionState == State.Connected)
                         {
                             <div class="waiting-participant" style="margin-bottom: 0;">
                                 <div>
-                                    <div style="font-weight: 600;">@participant.Name</div>
+                                    <div style="font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                                        @{
+                                            var isOnline = !participantOnlineStatus.TryGetValue(participant.Name, out var online) || online;
+                                        }
+                                        <span style="width: 8px; height: 8px; border-radius: 50%; background-color: @(isOnline ? "#21d789" : "#ff4d4d"); display: inline-block;"
+                                              title="@(isOnline ? "Online" : "Offline")"></span>
+                                        <span style="@(isOnline ? "color: var(--text-white);" : "color: var(--text-gray-muted); text-decoration: line-through;")">@participant.Name</span>
+                                        @if (!isOnline)
+                                        {
+                                            <span style="font-size: 0.75rem; color: #ff4d4d; font-weight: normal; margin-left: 2px;">(Offline)</span>
+                                        }
+                                    </div>
                                     <div style="font-size: 0.75rem; color: var(--text-gray-muted);">@participant.Role</div>
                                 </div>
                                 <div>
@@ -377,10 +390,10 @@ else if (connectionState == State.Connected)
     private State connectionState = State.Connecting;
     private HubConnection? hubConnection;
     private EstimationSessionDto? currentSession;
-    private string newStoryDescription = string.Empty;
     private string? selectedCard;
-
+    private string newStoryDescription = string.Empty;
     private HashSet<string> votedParticipants = new(StringComparer.OrdinalIgnoreCase);
+    private Dictionary<string, bool> participantOnlineStatus = new(StringComparer.OrdinalIgnoreCase);
     private List<PendingRequest> pendingRequests = new();
 
     private readonly List<DeckCard> deckCards = new()
@@ -430,6 +443,12 @@ else if (connectionState == State.Connected)
         };
 
         // Register handlers
+        hubConnection.On<string, bool>("OnParticipantConnectionStatusChanged", (name, isOnline) =>
+        {
+            participantOnlineStatus[name] = isOnline;
+            StateHasChanged();
+        });
+
         hubConnection.On<Guid, string, string>("OnJoinRequestReceived", (reqId, name, role) =>
         {
             if (IsModerator)
@@ -624,6 +643,13 @@ else if (connectionState == State.Connected)
                     if (participants != null)
                     {
                         roomParticipants = participants;
+                        foreach (var p in participants)
+                        {
+                            if (!participantOnlineStatus.ContainsKey(p.Name))
+                            {
+                                participantOnlineStatus[p.Name] = true;
+                            }
+                        }
                         return; // Success!
                     }
                 }
@@ -659,12 +685,11 @@ else if (connectionState == State.Connected)
 
         try
         {
-            var response = await Http.PostAsync($"v1/rooms/{RoomId}/session/start?storyDescription={Uri.EscapeDataString(newStoryDescription)}", null);
+            var response = await Http.PostAsJsonAsync($"v1/rooms/{RoomId}/session/start", new { StoryDescription = newStoryDescription });
             if (response.IsSuccessStatusCode)
             {
-                currentSession = await response.Content.ReadFromJsonAsync<EstimationSessionDto>();
                 newStoryDescription = string.Empty;
-                StateHasChanged();
+                await FetchSession();
             }
         }
         catch (Exception ex)
@@ -672,8 +697,6 @@ else if (connectionState == State.Connected)
             Console.WriteLine($"Error starting session: {ex.Message}");
         }
     }
-
-
 
     private async Task TransitionToPrivate()
     {
@@ -756,8 +779,19 @@ else if (connectionState == State.Connected)
 
     private async Task CloseSession()
     {
-        currentSession = null;
-        StateHasChanged();
+        try
+        {
+            var response = await Http.PostAsync($"v1/rooms/{RoomId}/session/close", null);
+            if (response.IsSuccessStatusCode)
+            {
+                currentSession = null;
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error closing session: {ex.Message}");
+        }
     }
 
     private async Task ApproveRequest(Guid reqId)

@@ -8,4 +8,5 @@ public interface IEstimationSessionRepository
 {
     Task<Either<Error, Models.EstimationSession>> FindById(SessionId sessionId);
     Task<Either<Error, Unit>> Save(Models.EstimationSession session);
+    Task<Either<Error, Unit>> Delete(SessionId sessionId);
 }

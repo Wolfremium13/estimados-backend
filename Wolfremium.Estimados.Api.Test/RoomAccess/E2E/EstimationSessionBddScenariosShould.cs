@@ -45,7 +45,7 @@ public class EstimationSessionBddScenariosShould : IClassFixture<WebApplicationF
         hubConnection.On<string>("OnVoteCast", name => { voteCastTask.SetResult(name); });
 
         var startSessionResponse =
-            await _httpClient.PostAsync($"v1/rooms/{roomId}/session/start?storyDescription=TestStory", null);
+            await _httpClient.PostAsJsonAsync($"v1/rooms/{roomId}/session/start", new { StoryDescription = "TestStory" });
         if (startSessionResponse.StatusCode != HttpStatusCode.OK)
         {
             var errText = await startSessionResponse.Content.ReadAsStringAsync();
@@ -83,7 +83,7 @@ public class EstimationSessionBddScenariosShould : IClassFixture<WebApplicationF
         var revealTask = new TaskCompletionSource<EstimationSessionDto>();
         hubConnection.On<EstimationSessionDto>("OnVotesRevealed", dto => { revealTask.SetResult(dto); });
 
-        await _httpClient.PostAsync($"v1/rooms/{roomId}/session/start?storyDescription=TestStory", null);
+        await _httpClient.PostAsJsonAsync($"v1/rooms/{roomId}/session/start", new { StoryDescription = "TestStory" });
         await _httpClient.PostAsync($"v1/rooms/{roomId}/session/transition/private-estimation", null);
 
         await _httpClient.PostAsJsonAsync($"v1/rooms/{roomId}/session/vote",
@@ -115,7 +115,7 @@ public class EstimationSessionBddScenariosShould : IClassFixture<WebApplicationF
         var restartTask = new TaskCompletionSource<bool>();
         hubConnection.On("OnVotesRestarted", () => { restartTask.SetResult(true); });
 
-        await _httpClient.PostAsync($"v1/rooms/{roomId}/session/start?storyDescription=TestStory", null);
+        await _httpClient.PostAsJsonAsync($"v1/rooms/{roomId}/session/start", new { StoryDescription = "TestStory" });
         await _httpClient.PostAsync($"v1/rooms/{roomId}/session/transition/private-estimation", null);
 
         await _httpClient.PostAsJsonAsync($"v1/rooms/{roomId}/session/vote",
@@ -145,7 +145,7 @@ public class EstimationSessionBddScenariosShould : IClassFixture<WebApplicationF
     {
         var roomId = await SetupRoomWithParticipants();
 
-        await _httpClient.PostAsync($"v1/rooms/{roomId}/session/start?storyDescription=TestStory", null);
+        await _httpClient.PostAsJsonAsync($"v1/rooms/{roomId}/session/start", new { StoryDescription = "TestStory" });
         await _httpClient.PostAsync($"v1/rooms/{roomId}/session/transition/private-estimation", null);
 
         var votePayload = new { participantName = "Pete", cardValue = "5" };
@@ -166,7 +166,7 @@ public class EstimationSessionBddScenariosShould : IClassFixture<WebApplicationF
         var haltedTask = new TaskCompletionSource<string>();
         hubConnection.On<string>("OnSessionHalted", reason => { haltedTask.SetResult(reason); });
 
-        await _httpClient.PostAsync($"v1/rooms/{roomId}/session/start?storyDescription=TestStory", null);
+        await _httpClient.PostAsJsonAsync($"v1/rooms/{roomId}/session/start", new { StoryDescription = "TestStory" });
         await _httpClient.PostAsync($"v1/rooms/{roomId}/session/transition/private-estimation", null);
 
         await _httpClient.PostAsJsonAsync($"v1/rooms/{roomId}/session/vote",
@@ -191,7 +191,7 @@ public class EstimationSessionBddScenariosShould : IClassFixture<WebApplicationF
     {
         var roomId = await SetupRoomWithParticipants();
 
-        await _httpClient.PostAsync($"v1/rooms/{roomId}/session/start?storyDescription=TestStory", null);
+        await _httpClient.PostAsJsonAsync($"v1/rooms/{roomId}/session/start", new { StoryDescription = "TestStory" });
         await _httpClient.PostAsync($"v1/rooms/{roomId}/session/transition/private-estimation", null);
 
         await _httpClient.PostAsJsonAsync($"v1/rooms/{roomId}/session/vote",

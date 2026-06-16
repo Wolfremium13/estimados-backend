@@ -20,5 +20,6 @@ public static class EstimationSessionServiceCollectionExtensions
         services.AddTransient<ITransitionToPrivateEstimationUseCase, TransitionToPrivateEstimationUseCase>();
         services.AddTransient<ITransitionToConsensusManagementUseCase, TransitionToConsensusManagementUseCase>();
         services.AddTransient<IGetEstimationSessionUseCase, GetEstimationSessionUseCase>();
+        services.AddTransient<ICloseEstimationSessionUseCase, CloseEstimationSessionUseCase>();
     }
 }

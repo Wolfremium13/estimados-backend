@@ -56,6 +56,18 @@ public class InMemoryEstimationSessionRepository(
         return Task.FromResult<Either<Error, Unit>>(Unit.Default);
     }
 
+    public Task<Either<Error, Unit>> Delete(SessionId sessionId)
+    {
+        Sessions.TryRemove(sessionId.Value, out _);
+
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            logger.LogInformation("In-memory repository: Deleted session {SessionId}.", sessionId.Value);
+        }
+
+        return Task.FromResult<Either<Error, Unit>>(Unit.Default);
+    }
+
     public static void Clear()
     {
         Sessions.Clear();
