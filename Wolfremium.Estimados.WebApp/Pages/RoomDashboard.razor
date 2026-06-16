@@ -194,10 +194,28 @@ else if (connectionState == State.Connected)
                             <span style="font-size: 3.5rem; display: block; margin-bottom: 1rem;">🪓</span>
                             <h3 style="color: #ef4444; margin-bottom: 0.5rem;">Estimation Halted (Limit of 8
                                 Exceeded)</h3>
-                            <p style="color: var(--text-gray-light); max-width: 500px; margin: 0 auto;">
+                            <p style="color: var(--text-gray-light); max-width: 500px; margin: 0 auto; margin-bottom: 1rem;">
                                 The Axe protocol has been triggered. This story is too complex or ambiguous. It
                                 must be split into smaller tasks before proceeding.
                             </p>
+                            @if (currentSession.Votes != null)
+                            {
+                                var axeLaunchers = currentSession.Votes
+                                    .Where(v => string.Equals(v.Card, "Axe", StringComparison.OrdinalIgnoreCase))
+                                    .Select(v => v.Name)
+                                    .ToList();
+                                @if (axeLaunchers.Any())
+                                {
+                                    <div style="margin-top: 1.5rem; padding: 0.75rem 1.25rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; display: inline-block;">
+                                        <span style="color: #ef4444; font-weight: 600; font-size: 0.95rem;">
+                                            🪓 Triggered by: 
+                                        </span>
+                                        <span style="color: var(--text-white); font-weight: 700; font-size: 0.95rem;">
+                                            @string.Join(", ", axeLaunchers)
+                                        </span>
+                                    </div>
+                                }
+                            }
                         </div>
                     }
                     else if (!currentSession.HasDiscrepancy && currentSession.ConsensusValue != null)
