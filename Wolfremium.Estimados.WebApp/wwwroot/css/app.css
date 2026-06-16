@@ -203,6 +203,7 @@ button:disabled, button[disabled], button.disabled {
 
 .btn-premium:disabled, .btn-premium[disabled], .btn-premium.disabled {
     background: var(--bg-dark-panel) !important;
+    background-image: none !important;
     color: var(--text-gray-dark) !important;
     border: 1px solid var(--border-color) !important;
     box-shadow: none !important;
@@ -211,6 +212,8 @@ button:disabled, button[disabled], button.disabled {
 }
 
 .btn-premium:disabled:hover, .btn-premium[disabled]:hover, .btn-premium.disabled:hover {
+    background: var(--bg-dark-panel) !important;
+    background-image: none !important;
     transform: none !important;
     box-shadow: none !important;
     filter: none !important;

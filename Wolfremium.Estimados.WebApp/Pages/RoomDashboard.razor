@@ -131,7 +131,7 @@ else if (connectionState == State.Connected)
                             <label class="form-label" for="storyDesc">User Story Description / Title (supports Markdown)</label>
                             <textarea id="storyDesc" class="form-control" rows="5"
                                       placeholder="e.g.&#10;# User Story Title&#10;As a user...&#10;I want to...&#10;So that...&#10;&#10;### Acceptance Criteria&#10;- [ ] Criteria 1&#10;- [ ] Criteria 2"
-                                      @bind="newStoryDescription" @bind:event="oninput"
+                                      value="@newStoryDescription" @oninput="UpdateStoryDescription"
                                       style="resize: vertical; font-family: monospace;"></textarea>
                         </div>
                         <button class="btn-premium @(string.IsNullOrWhiteSpace(newStoryDescription) ? "disabled" : "")" @onclick="StartSession"
@@ -492,6 +492,12 @@ else if (connectionState == State.Connected)
                 await Task.Delay(delayMs);
             }
         }
+    }
+
+    private void UpdateStoryDescription(ChangeEventArgs e)
+    {
+        newStoryDescription = e.Value?.ToString() ?? string.Empty;
+        StateHasChanged();
     }
 
     private async Task StartSession()
