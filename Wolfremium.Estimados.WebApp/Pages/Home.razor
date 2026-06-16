@@ -55,7 +55,7 @@
                 </div>
             }
 
-            <button class="btn-premium w-100" style="margin-top: 1.5rem;" @onclick="CreateRoom" disabled="@isCreating">
+            <button class="btn-premium w-100 @(isCreating ? "disabled" : "")" style="margin-top: 1.5rem;" @onclick="CreateRoom" disabled="@isCreating">
                 @if (isCreating)
                 {
                     <span>Creating Room...</span>
@@ -108,7 +108,7 @@
                 </div>
             }
 
-            <button class="btn-outline-premium w-100" style="margin-top: 1.5rem; background: rgba(255,255,255,0.02);"
+            <button class="btn-outline-premium w-100 @(isJoining ? "disabled" : "")" style="margin-top: 1.5rem; background: rgba(255,255,255,0.02);"
                     @onclick="JoinRoom" disabled="@isJoining">
                 @if (isJoining)
                 {

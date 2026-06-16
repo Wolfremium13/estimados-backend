@@ -197,11 +197,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Disabled state styling */
-button:disabled, button[disabled] {
+button:disabled, button[disabled], button.disabled {
     cursor: not-allowed !important;
 }
 
-.btn-premium:disabled, .btn-premium[disabled] {
+.btn-premium:disabled, .btn-premium[disabled], .btn-premium.disabled {
     background: var(--bg-dark-panel) !important;
     color: var(--text-gray-dark) !important;
     border: 1px solid var(--border-color) !important;
@@ -210,13 +210,13 @@ button:disabled, button[disabled] {
     filter: none !important;
 }
 
-.btn-premium:disabled:hover, .btn-premium[disabled]:hover {
+.btn-premium:disabled:hover, .btn-premium[disabled]:hover, .btn-premium.disabled:hover {
     transform: none !important;
     box-shadow: none !important;
     filter: none !important;
 }
 
-.btn-outline-premium:disabled, .btn-outline-premium[disabled] {
+.btn-outline-premium:disabled, .btn-outline-premium[disabled], .btn-outline-premium.disabled {
     background: transparent !important;
     border: 1px solid var(--border-color) !important;
     color: var(--text-gray-dark) !important;
@@ -224,7 +224,7 @@ button:disabled, button[disabled] {
     box-shadow: none !important;
 }
 
-.btn-outline-premium:disabled:hover, .btn-outline-premium[disabled]:hover {
+.btn-outline-premium:disabled:hover, .btn-outline-premium[disabled]:hover, .btn-outline-premium.disabled:hover {
     border-color: var(--border-color) !important;
     color: var(--text-gray-dark) !important;
     transform: none !important;
