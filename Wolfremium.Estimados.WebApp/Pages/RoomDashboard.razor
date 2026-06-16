@@ -135,7 +135,7 @@ else if (connectionState == State.Connected)
                                       style="resize: vertical; font-family: monospace;"></textarea>
                         </div>
                         <button class="btn-premium" @onclick="StartSession"
-                                disabled="@string.IsNullOrWhiteSpace(newStoryDescription)">
+                                disabled="@(string.IsNullOrWhiteSpace(newStoryDescription))">
                             Start Estimation Session
                         </button>
                     }
