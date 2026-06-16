@@ -268,3 +268,109 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--text-gray-muted);
     border-color: var(--border-color);
 }
+
+/* Blazor Error UI Toast & Tooltip Styles */
+#blazor-error-ui {
+    background: rgba(25, 25, 28, 0.95) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(239, 68, 68, 0.3) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(239, 68, 68, 0.1) !important;
+    color: var(--text-white) !important;
+    display: none;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    padding: 0.75rem 1.5rem !important;
+    position: fixed !important;
+    bottom: 2rem !important;
+    width: max-content !important;
+    max-width: 95% !important;
+    z-index: 10000 !important;
+    font-family: var(--font-sans) !important;
+    box-sizing: border-box;
+}
+
+#blazor-error-ui .reload {
+    background: linear-gradient(135deg, #7f52ff 0%, #5022ff 100%) !important;
+    color: var(--text-white) !important;
+    font-weight: 600 !important;
+    padding: 4px 12px !important;
+    border-radius: 6px !important;
+    font-size: 0.85rem !important;
+    margin-left: 8px !important;
+    box-shadow: 0 4px 10px rgba(127, 82, 255, 0.3) !important;
+    text-decoration: none !important;
+    display: inline-block !important;
+    transition: var(--transition-smooth) !important;
+}
+
+#blazor-error-ui .reload:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 15px rgba(127, 82, 255, 0.5) !important;
+    filter: brightness(1.1) !important;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer !important;
+    color: var(--text-gray-muted) !important;
+    font-size: 0.9rem !important;
+    margin-left: 8px !important;
+    transition: var(--transition-smooth) !important;
+}
+
+#blazor-error-ui .dismiss:hover {
+    color: var(--text-white) !important;
+}
+
+.error-badge {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: help;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.error-icon {
+    margin-right: 6px;
+}
+
+.error-tooltip {
+    visibility: hidden;
+    width: 320px;
+    background-color: var(--bg-dark-panel);
+    border: 1px solid var(--border-color);
+    color: var(--text-gray-light);
+    text-align: left;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    position: absolute;
+    z-index: 10001;
+    top: 150%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.error-tooltip::after {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent transparent var(--bg-dark-panel) transparent;
+}
+
+.error-badge:hover .error-tooltip {
+    visibility: visible;
+    opacity: 1;
+}
