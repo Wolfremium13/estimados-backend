@@ -7,6 +7,7 @@ namespace Wolfremium.Estimados.Hubs;
 
 public class RoomHub(
     IDisconnectModeratorUseCase disconnectModeratorUseCase,
+    IDisconnectParticipantUseCase disconnectParticipantUseCase,
     ICastVoteUseCase castVoteUseCase,
     IRevealVotesUseCase revealVotesUseCase,
     IResetVotesUseCase resetVotesUseCase,
@@ -14,7 +15,8 @@ public class RoomHub(
 ) : Hub
 {
     private static readonly ConcurrentDictionary<string, Guid> ModeratorConnections = new();
-    private static readonly ConcurrentDictionary<string, Guid> ParticipantConnections = new();
+    private static readonly ConcurrentDictionary<string, (Guid RoomId, string Name)> ParticipantConnections = new();
+    private static readonly ConcurrentDictionary<string, CancellationTokenSource> DisconnectionDelays = new();
 
     public async Task JoinRoomAsModerator(Guid roomId)
     {
@@ -27,14 +29,33 @@ public class RoomHub(
                 Context.ConnectionId, roomId);
     }
 
+    public async Task JoinRoomAsParticipantWithName(Guid roomId, string name)
+    {
+        var roomIdStr = $"room_{roomId}";
+        await Groups.AddToGroupAsync(Context.ConnectionId, roomIdStr);
+        ParticipantConnections[Context.ConnectionId] = (roomId, name);
+
+        var key = $"{roomId}_{name}";
+        if (DisconnectionDelays.TryRemove(key, out var cts))
+        {
+            cts.Cancel();
+            cts.Dispose();
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("SignalR Hub: Cancelled pending disconnection for participant {Name} in room {RoomId}.", name, roomId);
+        }
+
+        if (logger.IsEnabled(LogLevel.Information))
+            logger.LogInformation("SignalR Hub: Connection {ConnectionId} joined room {RoomId} as Participant {Name}.",
+                Context.ConnectionId, roomId, name);
+    }
+
     public async Task JoinRoomAsParticipant(Guid roomId)
     {
         var roomIdStr = $"room_{roomId}";
         await Groups.AddToGroupAsync(Context.ConnectionId, roomIdStr);
-        ParticipantConnections[Context.ConnectionId] = roomId;
 
         if (logger.IsEnabled(LogLevel.Information))
-            logger.LogInformation("SignalR Hub: Connection {ConnectionId} joined room {RoomId} as Participant.",
+            logger.LogInformation("SignalR Hub: Connection {ConnectionId} joined room {RoomId} as anonymous Participant.",
                 Context.ConnectionId, roomId);
     }
 
@@ -89,11 +110,51 @@ public class RoomHub(
             await Clients.Group($"room_{roomId}").SendAsync("OnRoomClosed");
         }
 
-        if (ParticipantConnections.TryRemove(Context.ConnectionId, out var pRoomId))
+        if (ParticipantConnections.TryRemove(Context.ConnectionId, out var connectionInfo))
+        {
             if (logger.IsEnabled(LogLevel.Information))
                 logger.LogInformation(
-                    "SignalR Hub: Participant connection {ConnectionId} disconnected from room {RoomId}.",
-                    Context.ConnectionId, pRoomId);
+                    "SignalR Hub: Participant {Name} connection {ConnectionId} disconnected from room {RoomId}. Waiting to see if they reconnect...",
+                    connectionInfo.Name, Context.ConnectionId, connectionInfo.RoomId);
+
+            var key = $"{connectionInfo.RoomId}_{connectionInfo.Name}";
+            var cts = new CancellationTokenSource();
+            DisconnectionDelays[key] = cts;
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(5000, cts.Token);
+
+                    DisconnectionDelays.TryRemove(key, out _);
+
+                    if (logger.IsEnabled(LogLevel.Information))
+                        logger.LogInformation("SignalR Hub: Disconnection delay elapsed. Removing participant {Name} from room {RoomId}.", connectionInfo.Name, connectionInfo.RoomId);
+
+                    var result = await disconnectParticipantUseCase.Execute(new DisconnectParticipantCommand(connectionInfo.RoomId, connectionInfo.Name));
+                    await result.Match(
+                        async success =>
+                        {
+                            await Clients.Group($"room_{connectionInfo.RoomId}").SendAsync("OnSessionUpdated");
+                        },
+                        error =>
+                        {
+                            logger.LogError("SignalR Hub: Failed to disconnect participant {Name} from room {RoomId}: {Message}", connectionInfo.Name, connectionInfo.RoomId, error.Message);
+                            return Task.CompletedTask;
+                        }
+                    );
+                }
+                catch (TaskCanceledException)
+                {
+                    // Reconnected successfully
+                }
+                finally
+                {
+                    cts.Dispose();
+                }
+            });
+        }
 
         await base.OnDisconnectedAsync(exception);
     }

@@ -11,4 +11,6 @@ public static class RoomAccessErrors
     public class AccessDeniedException(string message) : Exception(message);
 
     public class RoomClosedException(string message) : Exception(message);
+
+    public class ParticipantNotFoundException(string message) : Exception(message);
 }

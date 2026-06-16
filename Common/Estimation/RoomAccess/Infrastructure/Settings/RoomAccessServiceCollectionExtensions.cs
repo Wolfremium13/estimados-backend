@@ -21,5 +21,6 @@ public static class RoomAccessServiceCollectionExtensions
         services.AddTransient<IRejectJoinRequestUseCase, RejectJoinRequestUseCase>();
         services.AddTransient<IDisconnectModeratorUseCase, DisconnectModeratorUseCase>();
         services.AddTransient<IGetRoomParticipantsUseCase, GetRoomParticipantsUseCase>();
+        services.AddTransient<IDisconnectParticipantUseCase, DisconnectParticipantUseCase>();
     }
 }

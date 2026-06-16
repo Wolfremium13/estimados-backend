@@ -325,7 +325,7 @@ else if (connectionState == State.Connected)
                                             }
                                             else
                                             {
-                                                @if (vote?.Card != null || votedParticipants.Contains(participant.Name))
+                                                @if (vote != null || votedParticipants.Contains(participant.Name))
                                                 {
                                                     <span style="color: #21d789;">✓ Voted</span>
                                                 }
@@ -413,6 +413,18 @@ else if (connectionState == State.Connected)
                 .WithAutomaticReconnect()
                 .Build();
 
+        hubConnection.Reconnected += async (connectionId) =>
+        {
+            if (IsModerator)
+            {
+                await hubConnection.InvokeAsync("JoinRoomAsModerator", RoomId);
+            }
+            else
+            {
+                await hubConnection.InvokeAsync("JoinRoomAsParticipantWithName", RoomId, ParticipantName);
+            }
+        };
+
         // Register handlers
         hubConnection.On<Guid, string, string>("OnJoinRequestReceived", (reqId, name, role) =>
         {
@@ -487,6 +499,13 @@ else if (connectionState == State.Connected)
             StateHasChanged();
         });
 
+        hubConnection.On("OnSessionUpdated", async () =>
+        {
+            await FetchSession();
+            await FetchRoomParticipants();
+            StateHasChanged();
+        });
+
         try
         {
             await hubConnection.StartAsync();
@@ -499,7 +518,16 @@ else if (connectionState == State.Connected)
             }
             else
             {
-                await hubConnection.InvokeAsync("JoinRoomAsParticipant", RoomId);
+                await hubConnection.InvokeAsync("JoinRoomAsParticipantWithName", RoomId, ParticipantName);
+
+                await FetchRoomParticipants();
+                var isAlreadyApproved = roomParticipants.Any(p => string.Equals(p.Name, ParticipantName, StringComparison.OrdinalIgnoreCase));
+                if (isAlreadyApproved)
+                {
+                    connectionState = State.Connected;
+                    await FetchSession();
+                    StateHasChanged();
+                }
             }
         }
         catch (Exception ex)
@@ -532,7 +560,12 @@ else if (connectionState == State.Connected)
                         votedParticipants.Clear();
                         foreach (var v in currentSession.Votes)
                         {
-                            if (v.Card != null) votedParticipants.Add(v.Name);
+                            votedParticipants.Add(v.Name);
+                        }
+
+                        if (currentSession.CurrentState == "PrivateEstimation" && !votedParticipants.Contains(ParticipantName))
+                        {
+                            selectedCard = null;
                         }
 
                         return; // Success

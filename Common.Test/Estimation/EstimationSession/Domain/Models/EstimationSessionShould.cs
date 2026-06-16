@@ -286,4 +286,44 @@ public class EstimationSessionShould
         result.IsRight.ShouldBeTrue();
         session.CurrentState.ShouldBe(SessionState.ConsensusManagement);
     }
+
+    [Fact]
+    public void RecalculateConsensusWhenVoteIsRemovedDuringSimultaneousReveal()
+    {
+        var session = new EstimationSessionBuilder()
+            .WithState(SessionState.PrivateEstimation)
+            .WithVote("Carlos", ParticipantRole.Developer, "3")
+            .WithVote("Ana", ParticipantRole.Developer, "5")
+            .Build();
+
+        session.RevealVotes();
+        session.HasDiscrepancy.ShouldBeTrue();
+        session.ConsensusValue.IsNone.ShouldBeTrue();
+
+        var voterName = ParticipantName.Create("Ana").Match(n => n, _ => throw new Exception());
+        session.RemoveVote(voterName);
+
+        session.HasDiscrepancy.ShouldBeFalse();
+        session.ConsensusValue.IfSome(card => card.Value.ShouldBe("3"));
+    }
+
+    [Fact]
+    public void RestoreFromHaltedStateWhenHachaVoteIsRemoved()
+    {
+        var session = new EstimationSessionBuilder()
+            .WithState(SessionState.PrivateEstimation)
+            .WithVote("Carlos", ParticipantRole.Developer, "5")
+            .WithVote("Ana", ParticipantRole.Developer, "Hacha")
+            .Build();
+
+        session.RevealVotes();
+        session.CurrentState.ShouldBe(SessionState.Halted);
+
+        var voterName = ParticipantName.Create("Ana").Match(n => n, _ => throw new Exception());
+        session.RemoveVote(voterName);
+
+        session.CurrentState.ShouldBe(SessionState.SimultaneousReveal);
+        session.ConsensusValue.IfSome(card => card.Value.ShouldBe("5"));
+        session.HasDiscrepancy.ShouldBeFalse();
+    }
 }

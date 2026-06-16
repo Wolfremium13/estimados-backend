@@ -78,6 +78,17 @@ public class EstimationRoom
         return Either<Error, Unit>.Right(Unit.Default);
     }
 
+    public Either<Error, Unit> RemoveParticipant(ParticipantName name)
+    {
+        var participant = _activeParticipants.FirstOrDefault(p => p.Name == name);
+        if (participant == null)
+            return Either<Error, Unit>.Left(Error.New(new ParticipantNotFoundException(
+                $"Participant '{name}' not found in active participants.")));
+
+        _activeParticipants.Remove(participant);
+        return Either<Error, Unit>.Right(Unit.Default);
+    }
+
     public Either<Error, Unit> Close()
     {
         if (!IsActive) return Either<Error, Unit>.Right(Unit.Default);

@@ -52,7 +52,8 @@ public class EstimationSession
         if (CurrentState is not (SessionState.ClarificationDiscussion or
             SessionState.SimultaneousReveal or
             SessionState.ConsensusManagement or
-            SessionState.Halted))
+            SessionState.Halted or
+            SessionState.PrivateEstimation))
         {
             return Either<Error, Unit>.Left(Error.New(new InvalidStateTransitionException(
                 $"Cannot transition to PrivateEstimation from {CurrentState}.")));
@@ -91,6 +92,16 @@ public class EstimationSession
         return Either<Error, Unit>.Right(Unit.Default);
     }
 
+    public Either<Error, Unit> RemoveVote(ParticipantName voterName)
+    {
+        _votes.Remove(voterName);
+        if (CurrentState is SessionState.SimultaneousReveal or SessionState.ConsensusManagement or SessionState.Halted)
+        {
+            RecalculateConsensusAndDiscrepancies();
+        }
+        return Either<Error, Unit>.Right(Unit.Default);
+    }
+
     public Either<Error, Unit> RevealVotes()
     {
         if (CurrentState != SessionState.PrivateEstimation)
@@ -101,13 +112,39 @@ public class EstimationSession
             return Either<Error, Unit>.Left(Error.New(new NoVotesCastException(
                 "Cannot reveal votes because no developer has voted yet.")));
 
+        RecalculateConsensusAndDiscrepancies();
+
+        if (CurrentState != SessionState.Halted)
+        {
+            CurrentState = SessionState.SimultaneousReveal;
+        }
+
+        return Either<Error, Unit>.Right(Unit.Default);
+    }
+
+    private void RecalculateConsensusAndDiscrepancies()
+    {
+        _flaggedSpecialCards.Clear();
+
+        if (_votes.Count == 0)
+        {
+            ConsensusValue = Option<Card>.None;
+            HasDiscrepancy = false;
+            return;
+        }
+
         if (_votes.Values.Any(c => c.IsHacha))
         {
             CurrentState = SessionState.Halted;
             _flaggedSpecialCards.Add(Card.Create(Card.Hacha).Match(c => c, _ => throw new InvalidOperationException()));
             ConsensusValue = Option<Card>.None;
             HasDiscrepancy = false;
-            return Either<Error, Unit>.Right(Unit.Default);
+            return;
+        }
+
+        if (CurrentState == SessionState.Halted)
+        {
+            CurrentState = SessionState.SimultaneousReveal;
         }
 
         var specialCards = _votes.Values.Where(c => c.IsSpecial).Distinct().ToList();
@@ -127,9 +164,6 @@ public class EstimationSession
             ConsensusValue = Option<Card>.None;
             HasDiscrepancy = true;
         }
-
-        CurrentState = SessionState.SimultaneousReveal;
-        return Either<Error, Unit>.Right(Unit.Default);
     }
 
     public IReadOnlyCollection<ParticipantVote> GetVotes()
