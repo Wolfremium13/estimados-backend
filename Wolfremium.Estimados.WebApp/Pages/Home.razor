@@ -55,7 +55,9 @@
                 </div>
             }
 
-            <button class="btn-premium w-100 @(isCreating ? "disabled" : "")" style="margin-top: 1.5rem;" @onclick="CreateRoom" disabled="@isCreating">
+            <button class="btn-premium w-100 @(isCreating ? "disabled" : "")"
+                    style="margin-top: 1.5rem; @GetDisabledButtonStyle(isCreating)"
+                    @onclick="CreateRoom" disabled="@isCreating">
                 @if (isCreating)
                 {
                     <span>Creating Room...</span>
@@ -108,7 +110,8 @@
                 </div>
             }
 
-            <button class="btn-outline-premium w-100 @(isJoining ? "disabled" : "")" style="margin-top: 1.5rem; background: rgba(255,255,255,0.02);"
+            <button class="btn-outline-premium w-100 @(isJoining ? "disabled" : "")"
+                    style="margin-top: 1.5rem; @GetDisabledOutlineButtonStyle(isJoining)"
                     @onclick="JoinRoom" disabled="@isJoining">
                 @if (isJoining)
                 {
@@ -256,4 +259,13 @@
         public string ParticipantRole { get; set; } = string.Empty;
     }
 
+    private string GetDisabledButtonStyle(bool isDisabled) =>
+        isDisabled
+            ? "background: #212124 !important; background-image: none !important; color: #62626c !important; border: 1px solid #2d2d30 !important; box-shadow: none !important; transform: none !important; filter: none !important; cursor: not-allowed !important;"
+            : string.Empty;
+
+    private string GetDisabledOutlineButtonStyle(bool isDisabled) =>
+        isDisabled
+            ? "background: transparent !important; color: #62626c !important; border: 1px solid #2d2d30 !important; box-shadow: none !important; transform: none !important; cursor: not-allowed !important;"
+            : "background: rgba(255,255,255,0.02);";
 }

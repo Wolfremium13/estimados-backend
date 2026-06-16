@@ -134,7 +134,9 @@ else if (connectionState == State.Connected)
                                       value="@newStoryDescription" @oninput="UpdateStoryDescription"
                                       style="resize: vertical; font-family: monospace;"></textarea>
                         </div>
-                        <button class="btn-premium @(string.IsNullOrWhiteSpace(newStoryDescription) ? "disabled" : "")" @onclick="StartSession"
+                        <button class="btn-premium @(string.IsNullOrWhiteSpace(newStoryDescription) ? "disabled" : "")"
+                                style="@GetDisabledButtonStyle(string.IsNullOrWhiteSpace(newStoryDescription))"
+                                @onclick="StartSession"
                                 disabled="@(string.IsNullOrWhiteSpace(newStoryDescription))">
                             Start Estimation Session
                         </button>
@@ -150,7 +152,9 @@ else if (connectionState == State.Connected)
                             {
                                 var developers = roomParticipants.Where(p => string.Equals(p.Role, "Developer", StringComparison.OrdinalIgnoreCase)).ToList();
                                 var allDevelopersVoted = developers.Any() && developers.All(dev => votedParticipants.Contains(dev.Name));
-                                <button class="btn-premium @(!allDevelopersVoted ? "disabled" : "")" @onclick="RevealVotes"
+                                <button class="btn-premium @(!allDevelopersVoted ? "disabled" : "")"
+                                        style="@GetDisabledButtonStyle(!allDevelopersVoted)"
+                                        @onclick="RevealVotes"
                                         disabled="@(!allDevelopersVoted)">Reveal Votes
                                 </button>
                             }
@@ -693,6 +697,8 @@ else if (connectionState == State.Connected)
         Disconnected
     }
 
-
-
+    private string GetDisabledButtonStyle(bool isDisabled) =>
+        isDisabled
+            ? "background: #212124 !important; background-image: none !important; color: #62626c !important; border: 1px solid #2d2d30 !important; box-shadow: none !important; transform: none !important; filter: none !important; cursor: not-allowed !important;"
+            : string.Empty;
 }
