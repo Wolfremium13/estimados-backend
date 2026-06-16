@@ -390,15 +390,22 @@ else if (connectionState == State.Connected)
                                         @if (currentSession != null)
                                         {
                                             var vote = currentSession.Votes?.FirstOrDefault(v => string.Equals(v.Name, participant.Name, StringComparison.OrdinalIgnoreCase));
-                                            @if (vote != null && !string.IsNullOrEmpty(vote.Card))
+                                            @if (currentSession.CurrentState is "SimultaneousReveal" or "ConsensusManagement" or "Halted")
                                             {
                                                 <span style="font-family: var(--font-mono); font-weight: 700; color: #21d789;">
-                                                    @vote.Card
+                                                    @(vote?.Card ?? "Idle")
                                                 </span>
                                             }
                                             else
                                             {
-                                                <span style="color: var(--text-gray-muted);">Thinking...</span>
+                                                @if (vote != null || votedParticipants.Contains(participant.Name))
+                                                {
+                                                    <span style="color: #21d789;">✓ Voted</span>
+                                                }
+                                                else
+                                                {
+                                                    <span style="color: var(--text-gray-muted);">Thinking...</span>
+                                                }
                                             }
                                         }
                                         else

@@ -160,7 +160,9 @@ public class EstimationSession
     {
         return _votes.Select(kv => new ParticipantVote(
             kv.Key,
-            Option<Card>.Some(kv.Value)
+            CurrentState is SessionState.SimultaneousReveal or SessionState.ConsensusManagement or SessionState.Halted
+                ? Option<Card>.Some(kv.Value)
+                : Option<Card>.None
         )).ToList().AsReadOnly();
     }
 }

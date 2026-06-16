@@ -73,7 +73,7 @@ public class EstimationSessionShould
 
         var votes = session.GetVotes();
         votes.Count.ShouldBe(1);
-        votes.ShouldContain(v => v.Name == voterName && v.Card == card);
+        votes.ShouldContain(v => v.Name == voterName && v.Card.IsNone);
     }
 
     [Fact]
