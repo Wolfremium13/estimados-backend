@@ -540,9 +540,10 @@ else if (connectionState == State.Connected)
             }
         });
 
-        hubConnection.On<string>("OnVoteCast", (name) =>
+        hubConnection.On<string>("OnVoteCast", async (name) =>
         {
             votedParticipants.Add(name);
+            await FetchSession();
             StateHasChanged();
         });
 
