@@ -66,7 +66,7 @@ public class EstimationSessionBddScenariosShould : IClassFixture<WebApplicationF
         var sessionDto = await getResponse.Content.ReadFromJsonAsync<EstimationSessionDto>();
         sessionDto.ShouldNotBeNull();
         sessionDto.Votes.Count.ShouldBe(1);
-        sessionDto.Votes.ShouldContain(v => v.Name == "Ana" && v.Card == null);
+        sessionDto.Votes.ShouldContain(v => v.Name == "Ana" && v.Card == "5");
 
         await hubConnection.DisposeAsync();
     }
