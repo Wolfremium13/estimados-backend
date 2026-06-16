@@ -230,7 +230,7 @@ else if (connectionState == State.Connected)
                     }
 
                     <!-- Flagged Special Cards Recommendation -->
-                    @if (currentSession.FlaggedSpecialCards.Any())
+                    @if (currentSession.FlaggedSpecialCards != null && currentSession.FlaggedSpecialCards.Any())
                     {
                         <div style="margin-top: 2rem; border-top: 1px dashed var(--border-color); padding-top: 1.5rem;">
                             <h4 style="font-size: 1rem; margin-bottom: 0.75rem; text-transform: uppercase; color: var(--text-gray-muted); letter-spacing: 0.05em;">
@@ -320,7 +320,7 @@ else if (connectionState == State.Connected)
                                     {
                                         @if (currentSession != null)
                                         {
-                                            var vote = currentSession.Votes.FirstOrDefault(v => string.Equals(v.Name, participant.Name, StringComparison.OrdinalIgnoreCase));
+                                            var vote = currentSession.Votes?.FirstOrDefault(v => string.Equals(v.Name, participant.Name, StringComparison.OrdinalIgnoreCase));
                                             @if (currentSession.CurrentState is "SimultaneousReveal" or "ConsensusManagement" or "Halted")
                                             {
                                                 <span style="font-family: var(--font-mono); font-weight: 700; color: #21d789;">
@@ -562,9 +562,12 @@ else if (connectionState == State.Connected)
                     {
                         currentSession = session;
                         votedParticipants.Clear();
-                        foreach (var v in currentSession.Votes)
+                        if (currentSession.Votes != null)
                         {
-                            votedParticipants.Add(v.Name);
+                            foreach (var v in currentSession.Votes)
+                            {
+                                votedParticipants.Add(v.Name);
+                            }
                         }
 
                         if (currentSession.CurrentState == "PrivateEstimation" && !votedParticipants.Contains(ParticipantName))
