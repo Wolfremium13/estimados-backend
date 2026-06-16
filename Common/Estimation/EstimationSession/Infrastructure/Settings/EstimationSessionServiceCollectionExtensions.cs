@@ -17,7 +17,6 @@ public static class EstimationSessionServiceCollectionExtensions
         services.AddTransient<IRevealVotesUseCase, RevealVotesUseCase>();
         services.AddTransient<IResetVotesUseCase, ResetVotesUseCase>();
 
-        services.AddTransient<ITransitionToClarificationUseCase, TransitionToClarificationUseCase>();
         services.AddTransient<ITransitionToPrivateEstimationUseCase, TransitionToPrivateEstimationUseCase>();
         services.AddTransient<ITransitionToConsensusManagementUseCase, TransitionToConsensusManagementUseCase>();
         services.AddTransient<IGetEstimationSessionUseCase, GetEstimationSessionUseCase>();

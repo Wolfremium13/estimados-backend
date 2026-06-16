@@ -45,51 +45,16 @@ public class EstimationSessionShould
     }
 
     [Fact]
-    public void TransitionToClarificationSuccessfully()
-    {
-        var session = new EstimationSessionBuilder().Build();
-
-        var result = session.TransitionToClarification();
-
-        result.IsRight.ShouldBeTrue();
-        session.CurrentState.ShouldBe(SessionState.ClarificationDiscussion);
-    }
-
-    [Fact]
-    public void FailTransitionToClarificationWhenNotInStoryPresentation()
-    {
-        var session = new EstimationSessionBuilder()
-            .WithState(SessionState.ClarificationDiscussion)
-            .Build();
-
-        var result = session.TransitionToClarification();
-
-        result.IsLeft.ShouldBeTrue();
-        result.IfLeft(error => error.ToException().ShouldBeOfType<InvalidStateTransitionException>());
-    }
-
-    [Fact]
     public void TransitionToPrivateEstimationSuccessfully()
     {
         var session = new EstimationSessionBuilder()
-            .WithState(SessionState.ClarificationDiscussion)
+            .WithState(SessionState.StoryPresentation)
             .Build();
 
         var result = session.TransitionToPrivateEstimation();
 
         result.IsRight.ShouldBeTrue();
         session.CurrentState.ShouldBe(SessionState.PrivateEstimation);
-    }
-
-    [Fact]
-    public void FailTransitionToPrivateEstimationFromInvalidState()
-    {
-        var session = new EstimationSessionBuilder().Build();
-
-        var result = session.TransitionToPrivateEstimation();
-
-        result.IsLeft.ShouldBeTrue();
-        result.IfLeft(error => error.ToException().ShouldBeOfType<InvalidStateTransitionException>());
     }
 
     [Fact]
@@ -115,7 +80,7 @@ public class EstimationSessionShould
     public void FailCastingVoteWhenNotInPrivateEstimation()
     {
         var session = new EstimationSessionBuilder()
-            .WithState(SessionState.ClarificationDiscussion)
+            .WithState(SessionState.StoryPresentation)
             .Build();
         var voterName = ParticipantName.Create("Carlos").Match(n => n, _ => throw new Exception());
         var voterRole = ParticipantRole.Create(ParticipantRole.Developer).Match(r => r, _ => throw new Exception());

@@ -25,49 +25,41 @@ public class EstimationSessionBuilder
 
         if (_state != SessionState.StoryPresentation)
         {
-            session.TransitionToClarification().Match(
+            session.TransitionToPrivateEstimation().Match(
                 u => u,
-                error => throw new InvalidOperationException($"Failed to transition to Clarification: {error.Message}")
+                error => throw new InvalidOperationException(
+                    $"Failed to transition to PrivateEstimation: {error.Message}")
             );
 
-            if (_state != SessionState.ClarificationDiscussion)
+            foreach (var vote in _votes)
             {
-                session.TransitionToPrivateEstimation().Match(
+                var pName = ParticipantName.Create(vote.Name)
+                    .Match(n => n, e => throw new InvalidOperationException(e.Message));
+                var pRole = ParticipantRole.Create(vote.Role)
+                    .Match(r => r, e => throw new InvalidOperationException(e.Message));
+                var card = Card.Create(vote.CardValue)
+                    .Match(c => c, e => throw new InvalidOperationException(e.Message));
+
+                session.CastVote(pName, pRole, card).Match(
                     u => u,
-                    error => throw new InvalidOperationException(
-                        $"Failed to transition to PrivateEstimation: {error.Message}")
+                    error => throw new InvalidOperationException($"Failed to cast vote: {error.Message}")
+                );
+            }
+
+            if (_state != SessionState.PrivateEstimation)
+            {
+                session.RevealVotes().Match(
+                    u => u,
+                    error => throw new InvalidOperationException($"Failed to reveal votes: {error.Message}")
                 );
 
-                foreach (var vote in _votes)
+                if (_state == SessionState.ConsensusManagement)
                 {
-                    var pName = ParticipantName.Create(vote.Name)
-                        .Match(n => n, e => throw new InvalidOperationException(e.Message));
-                    var pRole = ParticipantRole.Create(vote.Role)
-                        .Match(r => r, e => throw new InvalidOperationException(e.Message));
-                    var card = Card.Create(vote.CardValue)
-                        .Match(c => c, e => throw new InvalidOperationException(e.Message));
-
-                    session.CastVote(pName, pRole, card).Match(
+                    session.TransitionToConsensusManagement().Match(
                         u => u,
-                        error => throw new InvalidOperationException($"Failed to cast vote: {error.Message}")
+                        error => throw new InvalidOperationException(
+                            $"Failed to transition to ConsensusManagement: {error.Message}")
                     );
-                }
-
-                if (_state != SessionState.PrivateEstimation)
-                {
-                    session.RevealVotes().Match(
-                        u => u,
-                        error => throw new InvalidOperationException($"Failed to reveal votes: {error.Message}")
-                    );
-
-                    if (_state == SessionState.ConsensusManagement)
-                    {
-                        session.TransitionToConsensusManagement().Match(
-                            u => u,
-                            error => throw new InvalidOperationException(
-                                $"Failed to transition to ConsensusManagement: {error.Message}")
-                        );
-                    }
                 }
             }
         }

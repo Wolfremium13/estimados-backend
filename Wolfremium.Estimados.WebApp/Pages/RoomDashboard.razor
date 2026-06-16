@@ -26,7 +26,7 @@ else if (connectionState == State.WaitingForApproval)
         <div class="col-md-6 text-center">
             <div class="glow-card">
                 <div class="loading-progress"
-                     style="position: relative; margin-bottom: 2rem; width: 5rem; height: 5rem; border: 4px solid var(--border-color); border-top: 4px solid #21d789; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                     style="position: relative; margin: 0 auto 2rem auto; width: 5rem; height: 5rem; border: 4px solid var(--border-color); border-top: 4px solid #21d789; border-radius: 50%; animation: spin 1s linear infinite;"></div>
                 <h3 style="margin-bottom: 1rem;">Waiting for Approval</h3>
                 <p style="color: var(--text-gray-light); font-size: 1rem; line-height: 1.6;">
                     Hi <strong>@ParticipantName</strong>, your request to join as <strong>@ParticipantRole</strong> has
@@ -97,9 +97,16 @@ else if (connectionState == State.Connected)
                                 @copyButtonText
                             </button>
                         </span>
-                        <h2 style="margin-top: 0.5rem; margin-bottom: 0;">
-                            @(string.IsNullOrEmpty(currentSession?.StoryDescription) ? "Waiting for story..." : currentSession.StoryDescription)
-                        </h2>
+                        <div class="user-story-description" style="margin-top: 0.5rem; margin-bottom: 0; font-size: 1.1rem; line-height: 1.6; color: var(--text-gray-light);">
+                            @if (string.IsNullOrEmpty(currentSession?.StoryDescription))
+                            {
+                                <h2 style="margin: 0; font-size: 1.5rem;">Waiting for story...</h2>
+                            }
+                            else
+                            {
+                                @((MarkupString)Markdown.ToHtml(currentSession.StoryDescription))
+                            }
+                        </div>
                     </div>
                     <div class="d-flex gap-2">
                         <span class="step-badge @(currentSession?.CurrentState == "PrivateEstimation" ? "" : "inactive")">
@@ -135,14 +142,7 @@ else if (connectionState == State.Connected)
                         <div class="d-flex gap-2 flex-wrap">
                             @if (currentSession.CurrentState == "StoryPresentation")
                             {
-                                <button class="btn-premium" @onclick="TransitionToClarification">Transition to
-                                    Clarification
-                                </button>
-                            }
-                            else if (currentSession.CurrentState == "ClarificationDiscussion")
-                            {
-                                <button class="btn-premium" @onclick="TransitionToPrivate">Open Voting (Private)
-                                </button>
+                                <button class="btn-premium" @onclick="TransitionToPrivate">Open Voting (Private)</button>
                             }
                             else if (currentSession.CurrentState == "PrivateEstimation")
                             {
@@ -673,21 +673,7 @@ else if (connectionState == State.Connected)
         }
     }
 
-    private async Task TransitionToClarification()
-    {
-        try
-        {
-            var response = await Http.PostAsync($"v1/rooms/{RoomId}/session/transition/clarification", null);
-            if (response.IsSuccessStatusCode)
-            {
-                await FetchSession();
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error transitioning: {ex.Message}");
-        }
-    }
+
 
     private async Task TransitionToPrivate()
     {

@@ -37,19 +37,9 @@ public class EstimationSession
         return new EstimationSession(id, roomId, storyDescription.Trim());
     }
 
-    public Either<Error, Unit> TransitionToClarification()
-    {
-        if (CurrentState != SessionState.StoryPresentation)
-            return Either<Error, Unit>.Left(Error.New(new InvalidStateTransitionException(
-                $"Cannot transition to ClarificationDiscussion from {CurrentState}.")));
-
-        CurrentState = SessionState.ClarificationDiscussion;
-        return Either<Error, Unit>.Right(Unit.Default);
-    }
-
     public Either<Error, Unit> TransitionToPrivateEstimation()
     {
-        if (CurrentState is not (SessionState.ClarificationDiscussion or
+        if (CurrentState is not (SessionState.StoryPresentation or
             SessionState.SimultaneousReveal or
             SessionState.ConsensusManagement or
             SessionState.Halted or

@@ -26,16 +26,15 @@ The system features a deck of cards with specific purposes to streamline the wor
 ---
 
 ## 4. Execution Protocol
-Estimation sessions follow a structured six-step flow led by the Moderator:
+Estimation sessions follow a structured five-step flow led by the Moderator:
 
-1.  **Step 1: Story Presentation**: The Product Owner presents the requirements and details the Acceptance Criteria.
-2.  **Step 2: Clarification Discussion**: The development team discusses risks and resolves technical queries with the Product Owner (who clarifies the *what* but not the *how much*).
-3.  **Step 3: Private Estimation**: Each developer selects a card in secret (numbers 1 to 8, or a special card).
-4.  **Step 4: Simultaneous Reveal**: All participants show their cards at the same time to prevent anchoring and authority bias.
-5.  **Step 5: Consensus Management and Outliers**:
+1.  **Step 1: Story Presentation**: The Product Owner presents the requirements (acceptance criteria, details, etc.) while the team discusses them and clarifies technical queries.
+2.  **Step 2: Private Estimation**: Each developer selects a card in secret (numbers 1 to 8, or a special card).
+3.  **Step 3: Simultaneous Reveal**: All participants show their cards at the same time to prevent anchoring and authority bias.
+4.  **Step 4: Consensus Management and Outliers**:
     *   *Consensus*: If all votes match, the value is recorded.
     *   *Discrepancy*: If there are differences, the extreme values (highest and lowest) explain their technical reasoning.
-6.  **Step 6: Re-estimation**: After a brief discussion, the private vote is repeated until consensus is reached.
+5.  **Step 5: Re-estimation**: After a brief discussion, the private vote is repeated until consensus is reached.
 
 ---
 

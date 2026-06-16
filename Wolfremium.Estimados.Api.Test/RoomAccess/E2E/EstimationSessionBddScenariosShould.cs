@@ -52,7 +52,6 @@ public class EstimationSessionBddScenariosShould : IClassFixture<WebApplicationF
             throw new Exception($"Start session failed: {startSessionResponse.StatusCode}. Content: {errText}");
         }
 
-        await _httpClient.PostAsync($"v1/rooms/{roomId}/session/transition/clarification", null);
         await _httpClient.PostAsync($"v1/rooms/{roomId}/session/transition/private-estimation", null);
 
         var votePayload = new { participantName = "Ana", cardValue = "5" };
@@ -85,7 +84,6 @@ public class EstimationSessionBddScenariosShould : IClassFixture<WebApplicationF
         hubConnection.On<EstimationSessionDto>("OnVotesRevealed", dto => { revealTask.SetResult(dto); });
 
         await _httpClient.PostAsync($"v1/rooms/{roomId}/session/start?storyDescription=TestStory", null);
-        await _httpClient.PostAsync($"v1/rooms/{roomId}/session/transition/clarification", null);
         await _httpClient.PostAsync($"v1/rooms/{roomId}/session/transition/private-estimation", null);
 
         await _httpClient.PostAsJsonAsync($"v1/rooms/{roomId}/session/vote",
@@ -118,7 +116,6 @@ public class EstimationSessionBddScenariosShould : IClassFixture<WebApplicationF
         hubConnection.On("OnVotesRestarted", () => { restartTask.SetResult(true); });
 
         await _httpClient.PostAsync($"v1/rooms/{roomId}/session/start?storyDescription=TestStory", null);
-        await _httpClient.PostAsync($"v1/rooms/{roomId}/session/transition/clarification", null);
         await _httpClient.PostAsync($"v1/rooms/{roomId}/session/transition/private-estimation", null);
 
         await _httpClient.PostAsJsonAsync($"v1/rooms/{roomId}/session/vote",
@@ -149,7 +146,6 @@ public class EstimationSessionBddScenariosShould : IClassFixture<WebApplicationF
         var roomId = await SetupRoomWithParticipants();
 
         await _httpClient.PostAsync($"v1/rooms/{roomId}/session/start?storyDescription=TestStory", null);
-        await _httpClient.PostAsync($"v1/rooms/{roomId}/session/transition/clarification", null);
         await _httpClient.PostAsync($"v1/rooms/{roomId}/session/transition/private-estimation", null);
 
         var votePayload = new { participantName = "Pete", cardValue = "5" };
@@ -171,7 +167,6 @@ public class EstimationSessionBddScenariosShould : IClassFixture<WebApplicationF
         hubConnection.On<string>("OnSessionHalted", reason => { haltedTask.SetResult(reason); });
 
         await _httpClient.PostAsync($"v1/rooms/{roomId}/session/start?storyDescription=TestStory", null);
-        await _httpClient.PostAsync($"v1/rooms/{roomId}/session/transition/clarification", null);
         await _httpClient.PostAsync($"v1/rooms/{roomId}/session/transition/private-estimation", null);
 
         await _httpClient.PostAsJsonAsync($"v1/rooms/{roomId}/session/vote",
@@ -197,7 +192,6 @@ public class EstimationSessionBddScenariosShould : IClassFixture<WebApplicationF
         var roomId = await SetupRoomWithParticipants();
 
         await _httpClient.PostAsync($"v1/rooms/{roomId}/session/start?storyDescription=TestStory", null);
-        await _httpClient.PostAsync($"v1/rooms/{roomId}/session/transition/clarification", null);
         await _httpClient.PostAsync($"v1/rooms/{roomId}/session/transition/private-estimation", null);
 
         await _httpClient.PostAsJsonAsync($"v1/rooms/{roomId}/session/vote",
