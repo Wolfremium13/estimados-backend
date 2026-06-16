@@ -1,9 +1,20 @@
-﻿@page "/"
+@page "/"
 @using System.Web
 @inject HttpClient Http
 @inject NavigationManager Navigation
 
 <PageTitle>es-timados - Agile Estimation</PageTitle>
+
+@if (!string.IsNullOrEmpty(errorMessageHome))
+{
+    <div class="row justify-content-center" style="margin-top: 2rem; margin-bottom: 1rem;">
+        <div class="col-md-10">
+            <div class="alert alert-danger text-center" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; padding: 1rem; border-radius: 8px; font-weight: 500;">
+                ⚠️ @errorMessageHome
+            </div>
+        </div>
+    </div>
+}
 
 <div class="row justify-content-center" style="margin-top: 2rem;">
     <div class="col-md-10 text-center" style="margin-bottom: 3rem;">
@@ -122,6 +133,7 @@
     private string roomCode = string.Empty;
     private bool isJoining = false;
     private string errorMessageJoin = string.Empty;
+    private string errorMessageHome = string.Empty;
 
     protected override void OnInitialized()
     {
@@ -131,6 +143,19 @@
         if (!string.IsNullOrEmpty(code))
         {
             roomCode = code;
+        }
+
+        var error = query["error"];
+        if (!string.IsNullOrEmpty(error))
+        {
+            if (error == "memory_reset")
+            {
+                errorMessageHome = "The server memory was reset, and the room no longer exists. Please start a new session.";
+            }
+            else
+            {
+                errorMessageHome = error;
+            }
         }
     }
 

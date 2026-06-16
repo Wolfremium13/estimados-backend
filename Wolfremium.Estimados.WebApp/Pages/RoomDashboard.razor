@@ -581,6 +581,11 @@ else if (connectionState == State.Connected)
                 else if (response.StatusCode == HttpStatusCode.NotFound)
                 {
                     Console.WriteLine($"Session/Room {RoomId} not found (attempt {i + 1}/{retries}). Retrying in {delayMs}ms...");
+                    if (i == retries - 1)
+                    {
+                        RedirectToHomeReset();
+                        return;
+                    }
                 }
                 else
                 {
@@ -625,6 +630,11 @@ else if (connectionState == State.Connected)
                 else if (response.StatusCode == HttpStatusCode.NotFound)
                 {
                     Console.WriteLine($"Room {RoomId} not found (attempt {i + 1}/{retries}). Retrying in {delayMs}ms...");
+                    if (i == retries - 1)
+                    {
+                        RedirectToHomeReset();
+                        return;
+                    }
                 }
                 else
                 {
@@ -818,6 +828,11 @@ else if (connectionState == State.Connected)
         {
             Console.WriteLine($"Clipboard error: {ex.Message}");
         }
+    }
+
+    private void RedirectToHomeReset()
+    {
+        Navigation.NavigateTo("/?error=memory_reset");
     }
 
     public async ValueTask DisposeAsync()
