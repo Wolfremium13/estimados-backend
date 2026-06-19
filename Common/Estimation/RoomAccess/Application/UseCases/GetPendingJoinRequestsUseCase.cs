@@ -7,9 +7,10 @@ using static Common.Estimation.RoomAccess.Domain.Errors.RoomAccessErrors;
 
 namespace Common.Estimation.RoomAccess.Application.UseCases;
 
-public class GetRoomParticipantsUseCase(IEstimationRoomRepository roomRepository) : IGetRoomParticipantsUseCase
+public class GetPendingJoinRequestsUseCase(IEstimationRoomRepository roomRepository) : IGetPendingJoinRequestsUseCase
 {
-    public async Task<Either<Error, IReadOnlyCollection<ParticipantDto>>> Execute(GetRoomParticipantsQuery query)
+    public async Task<Either<Error, IReadOnlyCollection<PendingJoinRequestDto>>> Execute(
+        GetPendingJoinRequestsQuery query)
     {
         return await (
             from rId in RoomId.Create(query.RoomId).ToAsync()
@@ -18,8 +19,9 @@ public class GetRoomParticipantsUseCase(IEstimationRoomRepository roomRepository
                 ? Either<Error, Unit>.Right(Unit.Default).ToAsync()
                 : Either<Error, Unit>
                     .Left(Error.New(new RoomNotFoundException($"Room with ID {query.RoomId} is not active."))).ToAsync()
-            select (IReadOnlyCollection<ParticipantDto>)room.ActiveParticipants
-                .Select(p => new ParticipantDto(p.Name.Value, p.Role.Value))
+            select (IReadOnlyCollection<PendingJoinRequestDto>)room.JoinRequests
+                .Where(r => r.Status == JoinRequestStatus.Pending)
+                .Select(r => new PendingJoinRequestDto(r.Id.Value.ToString(), r.Name.Value, r.Role.Value))
                 .ToList()
                 .AsReadOnly()
         );
