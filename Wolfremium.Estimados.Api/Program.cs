@@ -10,17 +10,20 @@ builder.Services.AddControllers();
 builder.Services.AddSignalR();
 builder.Services.AddRoomAccessServices();
 builder.Services.AddEstimationSessionServices();
-
-builder.Services.AddCors(options =>
+builder.Services.AddHealthChecks();
+if (builder.Environment.IsDevelopment())
 {
-    options.AddPolicy("WebAppPolicy", policy =>
+    builder.Services.AddCors(options =>
     {
-        policy.WithOrigins("http://localhost:5075", "https://localhost:7211")
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
+        options.AddPolicy("WebAppPolicy", policy =>
+        {
+            policy.WithOrigins("http://localhost:4321")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
+        });
     });
-});
+}
 
 var app = builder.Build();
 
@@ -35,7 +38,7 @@ else
 }
 
 app.UseCors("WebAppPolicy");
-
+app.UseHealthChecks("/health");
 app.MapControllers();
 app.MapHub<RoomHub>("/hubs/room");
 
