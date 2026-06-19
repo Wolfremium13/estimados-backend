@@ -1,0 +1,63 @@
+name: "es-timados - Api (PROD)"
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Docker image tag to deploy (default: latest)'
+        required: false
+        default: 'latest'
+        type: string
+
+jobs:
+  deploy:
+    environment: production
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set image tag
+        id: image_tag
+        run: |
+          if [ -n "${{ github.event.inputs.image_tag }}" ]; then
+            echo "tag=${{ github.event.inputs.image_tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=latest" >> $GITHUB_OUTPUT
+          fi
+          echo "🏷️ Selected tag: ${{ github.event.inputs.image_tag || 'latest' }}"
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.DOCKER_REGISTRY_SERVER_USERNAME }}
+          password: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
+
+      - name: Deploy Docker image to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+          app-name: 'es-timados-production-api'
+          images: 'ghcr.io/wolfremium13/es-timados-api:${{ steps.image_tag.outputs.tag }}'
+
+      - name: Health Check
+        run: |
+          echo "⏳ Waiting for API to start..."
+          sleep 60
+          APP_URL="https://es-timados-production-api.azurewebsites.net"
+          for i in {1..3}; do
+            echo "🔍 Attempt $i: $APP_URL/health"
+            if curl -f -s --max-time 30 "$APP_URL/health" > /dev/null; then
+              echo "✅ API started successfully"
+              break
+            elif [ $i -eq 3 ]; then
+              echo "⚠️ API is still not responding. Check Log Stream and Deployment Center."
+            else
+              echo "⏳ Retrying in 30s..."
+              sleep 30
+            fi
+          done
