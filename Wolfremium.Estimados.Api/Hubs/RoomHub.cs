@@ -24,6 +24,16 @@ public class RoomHub(
         await Groups.AddToGroupAsync(Context.ConnectionId, roomIdStr);
         ModeratorConnections[Context.ConnectionId] = roomId;
 
+        var key = $"moderator_{roomId}";
+        if (DisconnectionDelays.TryRemove(key, out var cts))
+        {
+            cts.Cancel();
+            cts.Dispose();
+            if (logger.IsEnabled(LogLevel.Information))
+                logger.LogInformation("SignalR Hub: Cancelled pending disconnection for moderator of room {RoomId}.",
+                    roomId);
+        }
+
         if (logger.IsEnabled(LogLevel.Information))
             logger.LogInformation("SignalR Hub: Connection {ConnectionId} joined room {RoomId} as Moderator.",
                 Context.ConnectionId, roomId);
@@ -41,7 +51,9 @@ public class RoomHub(
             cts.Cancel();
             cts.Dispose();
             if (logger.IsEnabled(LogLevel.Information))
-                logger.LogInformation("SignalR Hub: Cancelled pending disconnection for participant {Name} in room {RoomId}.", name, roomId);
+                logger.LogInformation(
+                    "SignalR Hub: Cancelled pending disconnection for participant {Name} in room {RoomId}.", name,
+                    roomId);
         }
 
         // Notify that the participant is online
@@ -58,7 +70,8 @@ public class RoomHub(
         await Groups.AddToGroupAsync(Context.ConnectionId, roomIdStr);
 
         if (logger.IsEnabled(LogLevel.Information))
-            logger.LogInformation("SignalR Hub: Connection {ConnectionId} joined room {RoomId} as anonymous Participant.",
+            logger.LogInformation(
+                "SignalR Hub: Connection {ConnectionId} joined room {RoomId} as anonymous Participant.",
                 Context.ConnectionId, roomId);
     }
 
@@ -106,11 +119,38 @@ public class RoomHub(
         {
             if (logger.IsEnabled(LogLevel.Information))
                 logger.LogInformation(
-                    "SignalR Hub: Moderator connection {ConnectionId} disconnected from room {RoomId}. Closing room...",
+                    "SignalR Hub: Moderator connection {ConnectionId} disconnected from room {RoomId}. Waiting to see if they reconnect...",
                     Context.ConnectionId, roomId);
 
-            _ = await disconnectModeratorUseCase.Execute(new DisconnectModeratorCommand(roomId));
-            await Clients.Group($"room_{roomId}").SendAsync("OnRoomClosed");
+            var key = $"moderator_{roomId}";
+            var cts = new CancellationTokenSource();
+            DisconnectionDelays[key] = cts;
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(3000, cts.Token); // 3 seconds delay for moderator refresh
+
+                    DisconnectionDelays.TryRemove(key, out _);
+
+                    if (logger.IsEnabled(LogLevel.Information))
+                        logger.LogInformation(
+                            "SignalR Hub: Moderator disconnection delay elapsed. Closing room {RoomId}.", roomId);
+
+                    _ = await disconnectModeratorUseCase.Execute(new DisconnectModeratorCommand(roomId));
+                    await Clients.Group($"room_{roomId}").SendAsync("OnRoomClosed");
+                }
+                catch (TaskCanceledException)
+                {
+                    if (logger.IsEnabled(LogLevel.Information))
+                        logger.LogInformation("SignalR Hub: Moderator reconnected to room {RoomId}.", roomId);
+                }
+                finally
+                {
+                    cts.Dispose();
+                }
+            });
         }
 
         if (ParticipantConnections.TryRemove(Context.ConnectionId, out var connectionInfo))
@@ -121,7 +161,8 @@ public class RoomHub(
                     connectionInfo.Name, Context.ConnectionId, connectionInfo.RoomId);
 
             // Notify immediately that the participant is offline
-            await Clients.Group($"room_{connectionInfo.RoomId}").SendAsync("OnParticipantConnectionStatusChanged", connectionInfo.Name, false);
+            await Clients.Group($"room_{connectionInfo.RoomId}")
+                .SendAsync("OnParticipantConnectionStatusChanged", connectionInfo.Name, false);
 
             var key = $"{connectionInfo.RoomId}_{connectionInfo.Name}";
             var cts = new CancellationTokenSource();
@@ -136,9 +177,13 @@ public class RoomHub(
                     DisconnectionDelays.TryRemove(key, out _);
 
                     if (logger.IsEnabled(LogLevel.Information))
-                        logger.LogInformation("SignalR Hub: Disconnection delay elapsed. Removing participant {Name} from room {RoomId}.", connectionInfo.Name, connectionInfo.RoomId);
+                        logger.LogInformation(
+                            "SignalR Hub: Disconnection delay elapsed. Removing participant {Name} from room {RoomId}.",
+                            connectionInfo.Name, connectionInfo.RoomId);
 
-                    var result = await disconnectParticipantUseCase.Execute(new DisconnectParticipantCommand(connectionInfo.RoomId, connectionInfo.Name));
+                    var result =
+                        await disconnectParticipantUseCase.Execute(
+                            new DisconnectParticipantCommand(connectionInfo.RoomId, connectionInfo.Name));
                     await result.Match(
                         async success =>
                         {
@@ -146,7 +191,9 @@ public class RoomHub(
                         },
                         error =>
                         {
-                            logger.LogError("SignalR Hub: Failed to disconnect participant {Name} from room {RoomId}: {Message}", connectionInfo.Name, connectionInfo.RoomId, error.Message);
+                            logger.LogError(
+                                "SignalR Hub: Failed to disconnect participant {Name} from room {RoomId}: {Message}",
+                                connectionInfo.Name, connectionInfo.RoomId, error.Message);
                             return Task.CompletedTask;
                         }
                     );
@@ -154,7 +201,8 @@ public class RoomHub(
                 catch (TaskCanceledException)
                 {
                     // Reconnected successfully, notify they are back online
-                    await Clients.Group($"room_{connectionInfo.RoomId}").SendAsync("OnParticipantConnectionStatusChanged", connectionInfo.Name, true);
+                    await Clients.Group($"room_{connectionInfo.RoomId}")
+                        .SendAsync("OnParticipantConnectionStatusChanged", connectionInfo.Name, true);
                 }
                 finally
                 {
