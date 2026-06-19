@@ -11,19 +11,22 @@ builder.Services.AddSignalR();
 builder.Services.AddRoomAccessServices();
 builder.Services.AddEstimationSessionServices();
 builder.Services.AddHealthChecks();
-if (builder.Environment.IsDevelopment())
+builder.Services.AddCors(options =>
 {
-    builder.Services.AddCors(options =>
+    var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+    if (allowedOrigins is null || allowedOrigins.Length == 0)
     {
-        options.AddPolicy("WebAppPolicy", policy =>
-        {
-            policy.WithOrigins("http://localhost:4321")
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowCredentials();
-        });
+        allowedOrigins = ["http://localhost:4321", "https://estimados-front.vercel.app"];
+    }
+
+    options.AddPolicy("WebAppPolicy", policy =>
+    {
+        policy.WithOrigins(allowedOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
-}
+});
 
 var app = builder.Build();
 
