@@ -11,6 +11,7 @@ public class RoomHub(
     ICastVoteUseCase castVoteUseCase,
     IRevealVotesUseCase revealVotesUseCase,
     IResetVotesUseCase resetVotesUseCase,
+    IHubContext<RoomHub> hubContext,
     ILogger<RoomHub> logger
 ) : Hub
 {
@@ -139,7 +140,7 @@ public class RoomHub(
                             "SignalR Hub: Moderator disconnection delay elapsed. Closing room {RoomId}.", roomId);
 
                     _ = await disconnectModeratorUseCase.Execute(new DisconnectModeratorCommand(roomId));
-                    await Clients.Group($"room_{roomId}").SendAsync("OnRoomClosed");
+                    await hubContext.Clients.Group($"room_{roomId}").SendAsync("OnRoomClosed");
                 }
                 catch (TaskCanceledException)
                 {
@@ -187,7 +188,7 @@ public class RoomHub(
                     await result.Match(
                         async success =>
                         {
-                            await Clients.Group($"room_{connectionInfo.RoomId}").SendAsync("OnSessionUpdated");
+                            await hubContext.Clients.Group($"room_{connectionInfo.RoomId}").SendAsync("OnSessionUpdated");
                         },
                         error =>
                         {
@@ -201,7 +202,7 @@ public class RoomHub(
                 catch (TaskCanceledException)
                 {
                     // Reconnected successfully, notify they are back online
-                    await Clients.Group($"room_{connectionInfo.RoomId}")
+                    await hubContext.Clients.Group($"room_{connectionInfo.RoomId}")
                         .SendAsync("OnParticipantConnectionStatusChanged", connectionInfo.Name, true);
                 }
                 finally
