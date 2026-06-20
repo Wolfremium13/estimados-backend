@@ -42,7 +42,7 @@ jobs:
         with:
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
           app-name: 'es-timados-production-api'
-          images: 'ghcr.io/wolfremium13/es-timados-api:${{ steps.image_tag.outputs.tag }}'
+          images: 'ghcr.io/wolfremium13/estimados-backend-api:${{ steps.image_tag.outputs.tag }}'
 
       - name: Health Check
         run: |
