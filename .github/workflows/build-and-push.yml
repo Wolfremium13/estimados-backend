@@ -146,7 +146,7 @@ jobs:
             - **Base Image:** mcr.microsoft.com/dotnet/aspnet:10.0
 
             ## 🔗 Links
-            - [Package on GitHub](https://github.com/${{ github.repository }}/pkgs/container/es-timados-api)
+            - [Package on GitHub](https://github.com/${{ github.repository }}/pkgs/container/estimados-backend-api)
             - [Dockerfile](https://github.com/${{ github.repository }}/blob/${{ steps.version.outputs.tag }}/Wolfremium.Estimados.Api/Dockerfile)
             `;
 
