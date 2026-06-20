@@ -41,7 +41,7 @@ else
 }
 
 app.UseCors("WebAppPolicy");
-app.UseHealthChecks("/health");
+app.MapHealthChecks("/health").RequireCors("WebAppPolicy");
 app.MapControllers();
 app.MapHub<RoomHub>("/hubs/room");
 
