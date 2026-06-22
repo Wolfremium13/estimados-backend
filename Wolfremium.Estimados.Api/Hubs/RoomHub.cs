@@ -47,6 +47,13 @@ public class RoomHub(
 
     public async Task JoinRoomAsParticipantWithName(Guid roomId, string name)
     {
+        if (ParticipantConnections.Any(kvp =>
+                kvp.Value.RoomId == roomId && kvp.Value.Name.Equals(name, StringComparison.OrdinalIgnoreCase) &&
+                kvp.Key != Context.ConnectionId))
+        {
+            throw new HubException("A participant with this name is already connected to this room.");
+        }
+
         var roomIdStr = $"room_{roomId}";
         await Groups.AddToGroupAsync(Context.ConnectionId, roomIdStr);
         ParticipantConnections[Context.ConnectionId] = (roomId, name);
