@@ -239,6 +239,36 @@ public class RoomAccessBddScenariosShould : IClassFixture<WebApplicationFactory<
         exception.Message.ShouldContain("A moderator is already connected to this room.");
     }
 
+    [Fact]
+    public async Task Scenario9_SecondParticipantConnectionWithSameNameIsRejected()
+    {
+        var response = await _httpClient.PostAsync("v1/rooms?moderatorName=Carlos", null);
+        var content = await response.Content.ReadFromJsonAsync<RoomCreateResponse>();
+        var roomId = content!.RoomId;
+
+        // Moderator connection
+        await using var hubConnectionCarlos = CreateHubConnection(roomId);
+        await hubConnectionCarlos.StartAsync();
+        await hubConnectionCarlos.InvokeAsync("JoinRoomAsModerator", roomId);
+
+        // First participant connection
+        await using var hubConnectionAna1 = CreateHubConnection(roomId);
+        await hubConnectionAna1.StartAsync();
+        await hubConnectionAna1.InvokeAsync("JoinRoomAsParticipantWithName", roomId, "Ana");
+
+        // Second participant connection with the same name
+        await using var hubConnectionAna2 = CreateHubConnection(roomId);
+        await hubConnectionAna2.StartAsync();
+
+        // Attempting to join with the same name should throw a HubException
+        var exception = await Assert.ThrowsAsync<HubException>(async () =>
+        {
+            await hubConnectionAna2.InvokeAsync("JoinRoomAsParticipantWithName", roomId, "Ana");
+        });
+
+        exception.Message.ShouldContain("A participant with this name is already connected to this room.");
+    }
+
     private HubConnection CreateHubConnection(Guid roomId)
     {
         return new HubConnectionBuilder()
