@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using Common.Estimation.RoomAccess.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 using Shouldly;
 using Wolfremium.Estimados.Controllers.V1.RoomAccess;
@@ -211,6 +212,31 @@ public class RoomAccessBddScenariosShould : IClassFixture<WebApplicationFactory<
 
         var roomClosedTriggered = await roomClosedTask.Task;
         roomClosedTriggered.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Scenario8_SecondModeratorConnectionIsRejected()
+    {
+        var response = await _httpClient.PostAsync("v1/rooms?moderatorName=Carlos", null);
+        var content = await response.Content.ReadFromJsonAsync<RoomCreateResponse>();
+        var roomId = content!.RoomId;
+
+        // First connection as moderator
+        await using var hubConnection1 = CreateHubConnection(roomId);
+        await hubConnection1.StartAsync();
+        await hubConnection1.InvokeAsync("JoinRoomAsModerator", roomId);
+
+        // Second connection as moderator
+        await using var hubConnection2 = CreateHubConnection(roomId);
+        await hubConnection2.StartAsync();
+
+        // Attempting to join should throw a HubException
+        var exception = await Assert.ThrowsAsync<HubException>(async () =>
+        {
+            await hubConnection2.InvokeAsync("JoinRoomAsModerator", roomId);
+        });
+
+        exception.Message.ShouldContain("A moderator is already connected to this room.");
     }
 
     private HubConnection CreateHubConnection(Guid roomId)

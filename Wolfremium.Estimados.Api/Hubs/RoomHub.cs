@@ -21,6 +21,11 @@ public class RoomHub(
 
     public async Task JoinRoomAsModerator(Guid roomId)
     {
+        if (ModeratorConnections.Any(kvp => kvp.Value == roomId && kvp.Key != Context.ConnectionId))
+        {
+            throw new HubException("A moderator is already connected to this room.");
+        }
+
         var roomIdStr = $"room_{roomId}";
         await Groups.AddToGroupAsync(Context.ConnectionId, roomIdStr);
         ModeratorConnections[Context.ConnectionId] = roomId;
@@ -188,7 +193,8 @@ public class RoomHub(
                     await result.Match(
                         async success =>
                         {
-                            await hubContext.Clients.Group($"room_{connectionInfo.RoomId}").SendAsync("OnSessionUpdated");
+                            await hubContext.Clients.Group($"room_{connectionInfo.RoomId}")
+                                .SendAsync("OnSessionUpdated");
                         },
                         error =>
                         {

@@ -6,11 +6,3 @@ services:
       dockerfile: Wolfremium.Estimados.Api/Dockerfile
     ports:
       - "5011:8080"
-  webapp:
-    image: wolfremium.estimados.webapp
-    build:
-      context: .
-      dockerfile: Wolfremium.Estimados.WebApp/Dockerfile
-    ports:
-      - "5075:80"
-
